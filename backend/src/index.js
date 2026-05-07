@@ -98,9 +98,10 @@ async function sendTokenEmail(email, nombre, token) {
   const html    = buildEmailHtml(nombre, token);
   const subject = `Tu token de acceso Faro: ${token}`;
   try {
-    await sendEmail(email, nombre, subject, html);
-    console.log(`✅ Token enviado a ${email}`);
-    return true;
+    const sent = await sendEmail(email, nombre, subject, html);
+    if (sent) { console.log(`✅ Token enviado a ${email}`); return true; }
+    console.log(`📧 [SIMULADO] Token para ${email}: ${token}`);
+    return false;
   } catch (err) {
     console.warn(`⚠️ Email falló (${err.message}). Token: ${token}`);
     return false;
@@ -213,7 +214,7 @@ async function initDB() {
         total DECIMAL(12,2) NOT NULL DEFAULT 0,
         ganancia DECIMAL(12,2) NOT NULL DEFAULT 0,
         cliente VARCHAR(150) DEFAULT '',
-        notas TEXT DEFAULT '',
+        notas TEXT,
         fecha DATE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
