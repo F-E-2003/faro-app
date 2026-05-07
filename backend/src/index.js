@@ -124,7 +124,7 @@ async function initDB() {
         usuario_id INT NOT NULL,
         estado VARCHAR(20) DEFAULT 'pendiente',
         metodo_pago VARCHAR(50) DEFAULT '',
-        referencia_pago TEXT DEFAULT '',
+        referencia_pago VARCHAR(500) DEFAULT '',
         token VARCHAR(25) DEFAULT NULL,
         token_enviado_en DATETIME DEFAULT NULL,
         fecha_inicio DATETIME DEFAULT NULL,
