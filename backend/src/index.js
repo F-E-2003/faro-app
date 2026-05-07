@@ -36,15 +36,37 @@ const PRECIO_PLAN  = 150000; // COP
 
 // ── EMAIL ─────────────────────────────────────────────────────────────────────
 function getTransporter() {
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const port = parseInt(process.env.SMTP_PORT || '587');
+
+  if (host && user && pass) {
+    const secure = port === 465;
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      host,
+      port,
+      secure,
+      requireTLS: !secure,
+      auth: { user, pass },
+      tls: { rejectUnauthorized: false },
     });
   }
+  console.warn('⚠️  SMTP no configurado (SMTP_HOST, SMTP_USER o SMTP_PASS faltantes). Los emails serán simulados.');
   return null;
+}
+
+// Verificar conexión SMTP al arrancar
+async function testSMTP() {
+  const t = getTransporter();
+  if (!t) return;
+  try {
+    await t.verify();
+    console.log(`✅ SMTP conectado correctamente (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587})`);
+  } catch (err) {
+    console.error(`❌ SMTP ERROR: ${err.message}`);
+    console.error('   Verifica SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en las variables de entorno.');
+  }
 }
 
 async function sendTokenEmail(email, nombre, token) {
@@ -438,6 +460,39 @@ app.delete('/api/admin/usuarios/:id', adminAuth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Endpoint para probar configuración de email desde el panel admin
+app.post('/api/admin/test-email', adminAuth, async (req, res) => {
+  const { email_destino } = req.body;
+  const destino = email_destino || process.env.SMTP_USER;
+  if (!destino) return res.status(400).json({ error: 'No hay dirección de destino' });
+
+  const t = getTransporter();
+  if (!t) {
+    return res.json({
+      ok: false,
+      mensaje: 'SMTP no configurado. Verifica las variables SMTP_HOST, SMTP_USER y SMTP_PASS en Railway.'
+    });
+  }
+  try {
+    await t.verify();
+    await t.sendMail({
+      from: `"Faro App" <${process.env.SMTP_USER}>`,
+      to: destino,
+      subject: '✅ Prueba de email — Faro App',
+      html: `<div style="font-family:sans-serif;padding:20px">
+        <h2 style="color:#006d43">✅ Email de prueba recibido</h2>
+        <p>Si ves este mensaje, el servidor de Faro está enviando emails correctamente.</p>
+        <p style="color:#888;font-size:12px">Faro — Tu Copiloto de Negocio</p>
+      </div>`,
+    });
+    console.log(`✅ Email de prueba enviado a ${destino}`);
+    res.json({ ok: true, mensaje: `Email de prueba enviado a ${destino}` });
+  } catch (err) {
+    console.error(`❌ Test email falló: ${err.message}`);
+    res.json({ ok: false, mensaje: `Error SMTP: ${err.message}` });
+  }
+});
+
 app.get('/api/admin/suscripciones', adminAuth, async (req, res) => {
   try {
     const rows = await q(`
@@ -699,11 +754,13 @@ app.get('/', (req, res) => res.sendFile(FRONTEND_PATH));
 
 // ── START ─────────────────────────────────────────────────────────────────────
 initDB()
-  .then(() => {
+  .then(async () => {
+    await testSMTP();
     const port = parseInt(process.env.PORT) || 3002;
     app.listen(port, () => {
       console.log(`🚀 Faro Backend → http://localhost:${port}`);
       console.log(`   DB: ${DB_NAME} | ADMIN_EMAILS: ${ADMIN_EMAILS.join(',') || '(ninguno)'}`);
+      console.log(`   SMTP_USER: ${process.env.SMTP_USER || '(no configurado)'}`);
     });
   })
   .catch(err => { console.error('No se pudo iniciar:', err.message); process.exit(1); });

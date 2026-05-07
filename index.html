@@ -1035,6 +1035,10 @@
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
+            <button onclick="testearEmail()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors" style="background:rgba(255,255,255,0.13)" onmouseover="this.style.background='rgba(255,255,255,0.23)'" onmouseout="this.style.background='rgba(255,255,255,0.13)'" title="Probar configuración de email">
+              <span class="material-symbols-outlined text-sm">mail</span>
+              <span class="hidden sm:inline">Test Email</span>
+            </button>
             <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
               <span class="material-symbols-outlined text-sm">refresh</span>
               <span class="hidden sm:inline">Actualizar</span>
@@ -2165,6 +2169,46 @@ async function eliminarUsuario(uid, nombre) {
     if (!data || data.error) throw new Error((data && data.error) || 'Error al eliminar');
     loadAdminPanel();
   } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function testearEmail() {
+  const emailDestino = prompt('Correo de destino para la prueba:\n(deja vacío para enviar al correo SMTP configurado)');
+  if (emailDestino === null) return; // canceló
+  const token = localStorage.getItem('faro_token');
+  try {
+    const resp = await fetch('/api/admin/test-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ email_destino: emailDestino.trim() || undefined })
+    });
+    const data = await resp.json();
+    if (data.ok) {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:32px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+          <div style="font-size:48px;margin-bottom:12px">✅</div>
+          <h3 style="font-size:18px;font-weight:800;color:#006d43;margin:0 0 8px">Email enviado</h3>
+          <p style="color:#555;font-size:14px;margin:0 0 20px">${data.mensaje}</p>
+          <button onclick="this.closest('[style]').remove()" style="background:#006d43;color:#fff;border:none;border-radius:12px;padding:10px 28px;font-weight:700;font-size:14px;cursor:pointer">Cerrar</button>
+        </div>`;
+      document.body.appendChild(overlay);
+    } else {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:20px;padding:32px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+          <div style="font-size:40px;text-align:center;margin-bottom:12px">❌</div>
+          <h3 style="font-size:18px;font-weight:800;color:#d32f2f;margin:0 0 10px;text-align:center">Error de email</h3>
+          <div style="background:#fff3f3;border:1px solid #ffcdd2;border-radius:12px;padding:14px;font-size:13px;color:#c62828;font-family:monospace;word-break:break-all;margin-bottom:16px">${data.mensaje}</div>
+          <p style="font-size:13px;color:#666;margin:0 0 16px">Verifica las variables <strong>SMTP_HOST</strong>, <strong>SMTP_PORT</strong>, <strong>SMTP_USER</strong> y <strong>SMTP_PASS</strong> en Railway.</p>
+          <button onclick="this.closest('[style]').remove()" style="background:#d32f2f;color:#fff;border:none;border-radius:12px;padding:10px 28px;font-weight:700;font-size:14px;cursor:pointer;width:100%">Cerrar</button>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+  } catch (e) {
+    alert('Error al conectar con el servidor: ' + e.message);
+  }
 }
 
 // ── Utils ──
