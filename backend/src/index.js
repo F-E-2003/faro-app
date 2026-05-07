@@ -466,11 +466,27 @@ app.post('/api/admin/test-email', adminAuth, async (req, res) => {
   const destino = email_destino || process.env.SMTP_USER;
   if (!destino) return res.status(400).json({ error: 'No hay dirección de destino' });
 
+  // Diagnóstico de variables
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const smtpPort = process.env.SMTP_PORT;
+  const faltantes = [];
+  if (!smtpHost) faltantes.push('SMTP_HOST');
+  if (!smtpUser) faltantes.push('SMTP_USER');
+  if (!smtpPass) faltantes.push('SMTP_PASS');
+
   const t = getTransporter();
   if (!t) {
     return res.json({
       ok: false,
-      mensaje: 'SMTP no configurado. Verifica las variables SMTP_HOST, SMTP_USER y SMTP_PASS en Railway.'
+      diagnostico: {
+        SMTP_HOST: smtpHost || '❌ NO DEFINIDA',
+        SMTP_PORT: smtpPort || '⚠️ usando 587 por defecto',
+        SMTP_USER: smtpUser || '❌ NO DEFINIDA',
+        SMTP_PASS: smtpPass ? `✅ definida (${smtpPass.length} chars)` : '❌ NO DEFINIDA',
+      },
+      mensaje: `Variables faltantes: ${faltantes.join(', ')}. Verifica en Railway → Variables.`
     });
   }
   try {
