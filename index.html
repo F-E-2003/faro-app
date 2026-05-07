@@ -1874,6 +1874,7 @@ async function saveVenta() {
     closeModal('modal-venta');
     loadVentas();
     loadProductos();
+    loadFinanzas();
     loadDashboard();
   }
 }
@@ -1881,7 +1882,7 @@ async function saveVenta() {
 async function deleteVenta(id) {
   if (!confirm('¿Eliminar esta venta? El stock del producto será restaurado.')) return;
   const res = await apiFetch(`/ventas/${id}`, { method: 'DELETE' });
-  if (res?.ok) { loadVentas(); loadProductos(); loadDashboard(); }
+  if (res?.ok) { loadVentas(); loadProductos(); loadFinanzas(); loadDashboard(); }
 }
 
 async function loadProductos() {
