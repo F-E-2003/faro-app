@@ -35,43 +35,12 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim
 const PRECIO_PLAN  = 150000; // COP
 
 // ── EMAIL ─────────────────────────────────────────────────────────────────────
-function getTransporter() {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const port = parseInt(process.env.SMTP_PORT || '587');
+// Prioridad: 1) Resend API (recomendado, no bloquea firewalls)
+//            2) SMTP nodemailer (fallback)
+//            3) Simulado (log en consola)
 
-  if (host && user && pass) {
-    const secure = port === 465;
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      requireTLS: !secure,
-      auth: { user, pass },
-      tls: { rejectUnauthorized: false },
-    });
-  }
-  console.warn('⚠️  SMTP no configurado (SMTP_HOST, SMTP_USER o SMTP_PASS faltantes). Los emails serán simulados.');
-  return null;
-}
-
-// Verificar conexión SMTP al arrancar
-async function testSMTP() {
-  const t = getTransporter();
-  if (!t) return;
-  try {
-    await t.verify();
-    console.log(`✅ SMTP conectado correctamente (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587})`);
-  } catch (err) {
-    console.error(`❌ SMTP ERROR: ${err.message}`);
-    console.error('   Verifica SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en las variables de entorno.');
-  }
-}
-
-async function sendTokenEmail(email, nombre, token) {
-  // Retorna true si el correo se envió, false si fue simulado
-  const html = `
+function buildEmailHtml(nombre, token) {
+  return `
     <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:16px">
       <h2 style="color:#006d43">🔑 Tu token de acceso a <strong>Faro</strong></h2>
       <p>Hola <strong>${nombre}</strong>,</p>
@@ -85,25 +54,88 @@ async function sendTokenEmail(email, nombre, token) {
       <hr style="margin:20px 0;border:none;border-top:1px solid #eee"/>
       <p style="font-size:12px;color:#aaa">Faro — Tu Copiloto de Negocio</p>
     </div>`;
+}
+
+// Envía vía Resend API (usa HTTPS, nunca bloqueado por firewalls)
+async function sendViaResend(to, subject, html) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return false;
+  const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
+  const resp = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: `Faro App <${fromEmail}>`, to, subject, html }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.message || `Resend error ${resp.status}`);
+  return true;
+}
+
+// Envía vía SMTP (fallback, puede ser bloqueado en algunos hosts)
+function getTransporter() {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  if (!host || !user || !pass) return null;
+  const secure = port === 465;
+  return nodemailer.createTransport({
+    host, port, secure,
+    requireTLS: !secure,
+    auth: { user, pass },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 10000,
+  });
+}
+
+async function testSMTP() {
+  if (process.env.RESEND_API_KEY) {
+    console.log(`✅ Email configurado con Resend API`);
+    return;
+  }
+  const t = getTransporter();
+  if (!t) {
+    console.warn('⚠️  Email no configurado. Los tokens solo se mostrarán en pantalla.');
+    return;
+  }
+  try {
+    await t.verify();
+    console.log(`✅ SMTP conectado (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587})`);
+  } catch (err) {
+    console.error(`❌ SMTP ERROR: ${err.message} — considera usar RESEND_API_KEY en su lugar.`);
+  }
+}
+
+async function sendTokenEmail(email, nombre, token) {
+  const html = buildEmailHtml(nombre, token);
+  const subject = `Tu token de acceso Faro: ${token}`;
+
+  // Intentar Resend primero
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendViaResend(email, subject, html);
+      console.log(`✅ Token enviado por Resend a ${email}`);
+      return true;
+    } catch (err) {
+      console.warn(`⚠️ Resend falló (${err.message}). Intentando SMTP...`);
+    }
+  }
+
+  // Fallback a SMTP
   const transporter = getTransporter();
   if (transporter) {
     try {
-      await transporter.sendMail({
-        from: `"Faro App" <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: `Tu token de acceso Faro: ${token}`,
-        html,
-      });
-      console.log(`✅ Token enviado por email a ${email}`);
+      await transporter.sendMail({ from: `"Faro App" <${process.env.SMTP_USER}>`, to: email, subject, html });
+      console.log(`✅ Token enviado por SMTP a ${email}`);
       return true;
     } catch (err) {
-      console.warn(`⚠️ Email no enviado (${err.message}). Token: ${token}`);
+      console.warn(`⚠️ SMTP falló (${err.message}). Token: ${token}`);
       return false;
     }
-  } else {
-    console.log(`📧 [SIMULADO] Token para ${email} (${nombre}): ${token}`);
-    return false;
   }
+
+  console.log(`📧 [SIMULADO] Token para ${email}: ${token}`);
+  return false;
 }
 
 // ── DB POOL ───────────────────────────────────────────────────────────────────
@@ -463,48 +495,49 @@ app.delete('/api/admin/usuarios/:id', adminAuth, async (req, res) => {
 // Endpoint para probar configuración de email desde el panel admin
 app.post('/api/admin/test-email', adminAuth, async (req, res) => {
   const { email_destino } = req.body;
-  const destino = email_destino || process.env.SMTP_USER;
-  if (!destino) return res.status(400).json({ error: 'No hay dirección de destino' });
+  const destino = email_destino || process.env.SMTP_USER || process.env.RESEND_FROM;
+  if (!destino) return res.status(400).json({ error: 'Ingresa un correo de destino.' });
 
-  // Diagnóstico de variables
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const smtpPort = process.env.SMTP_PORT;
-  const faltantes = [];
-  if (!smtpHost) faltantes.push('SMTP_HOST');
-  if (!smtpUser) faltantes.push('SMTP_USER');
-  if (!smtpPass) faltantes.push('SMTP_PASS');
+  const html = `<div style="font-family:sans-serif;padding:24px;max-width:480px">
+    <h2 style="color:#006d43">✅ Email de prueba — Faro App</h2>
+    <p>Si ves este mensaje, el servidor de Faro está enviando emails correctamente.</p>
+    <p style="color:#888;font-size:12px">Faro — Tu Copiloto de Negocio</p>
+  </div>`;
+  const subject = '✅ Prueba de email — Faro App';
 
+  // Intentar Resend
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await sendViaResend(destino, subject, html);
+      console.log(`✅ Test email enviado por Resend a ${destino}`);
+      return res.json({ ok: true, mensaje: `Email enviado a ${destino} vía Resend ✅` });
+    } catch (err) {
+      console.warn(`⚠️ Resend test falló: ${err.message}`);
+      return res.json({ ok: false, mensaje: `Error Resend: ${err.message}` });
+    }
+  }
+
+  // Intentar SMTP
   const t = getTransporter();
   if (!t) {
     return res.json({
       ok: false,
       diagnostico: {
-        SMTP_HOST: smtpHost || '❌ NO DEFINIDA',
-        SMTP_PORT: smtpPort || '⚠️ usando 587 por defecto',
-        SMTP_USER: smtpUser || '❌ NO DEFINIDA',
-        SMTP_PASS: smtpPass ? `✅ definida (${smtpPass.length} chars)` : '❌ NO DEFINIDA',
+        RESEND_API_KEY: '❌ NO DEFINIDA (recomendado)',
+        SMTP_HOST: process.env.SMTP_HOST || '❌ NO DEFINIDA',
+        SMTP_PORT: process.env.SMTP_PORT || '587 (default)',
+        SMTP_USER: process.env.SMTP_USER || '❌ NO DEFINIDA',
+        SMTP_PASS: process.env.SMTP_PASS ? `✅ (${process.env.SMTP_PASS.length} chars)` : '❌ NO DEFINIDA',
       },
-      mensaje: `Variables faltantes: ${faltantes.join(', ')}. Verifica en Railway → Variables.`
+      mensaje: 'No hay configuración de email. Agrega RESEND_API_KEY en Railway.'
     });
   }
   try {
-    await t.verify();
-    await t.sendMail({
-      from: `"Faro App" <${process.env.SMTP_USER}>`,
-      to: destino,
-      subject: '✅ Prueba de email — Faro App',
-      html: `<div style="font-family:sans-serif;padding:20px">
-        <h2 style="color:#006d43">✅ Email de prueba recibido</h2>
-        <p>Si ves este mensaje, el servidor de Faro está enviando emails correctamente.</p>
-        <p style="color:#888;font-size:12px">Faro — Tu Copiloto de Negocio</p>
-      </div>`,
-    });
-    console.log(`✅ Email de prueba enviado a ${destino}`);
-    res.json({ ok: true, mensaje: `Email de prueba enviado a ${destino}` });
+    await t.sendMail({ from: `"Faro App" <${process.env.SMTP_USER}>`, to: destino, subject, html });
+    console.log(`✅ Test email enviado por SMTP a ${destino}`);
+    res.json({ ok: true, mensaje: `Email enviado a ${destino} vía SMTP ✅` });
   } catch (err) {
-    console.error(`❌ Test email falló: ${err.message}`);
+    console.error(`❌ Test SMTP falló: ${err.message}`);
     res.json({ ok: false, mensaje: `Error SMTP: ${err.message}` });
   }
 });
