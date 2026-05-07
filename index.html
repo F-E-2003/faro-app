@@ -1658,7 +1658,7 @@ async function loadAllData() {
 async function loadDashboard() {
   const data = await apiFetch('/dashboard');
   if (!data) return;
-  const fmt = n => '$' + Number(n || 0).toLocaleString('es-MX');
+  const fmt = n => cop(n);
   document.getElementById('kpi-ingresos').textContent = fmt(data.ingresos);
   document.getElementById('kpi-stock').textContent = data.total_productos || 0;
   if (data.stock_bajo > 0) {
@@ -1681,9 +1681,9 @@ async function loadFinanzas() {
   const ingresos = data.filter(f => f.tipo === 'ingreso').reduce((s, f) => s + Number(f.monto), 0);
   const gastos = data.filter(f => f.tipo === 'gasto').reduce((s, f) => s + Number(f.monto), 0);
   const diferencia = ingresos - gastos;
-  const fmt = n => '$' + Math.abs(n).toLocaleString('es-MX');
-  document.getElementById('fin-ingresos').textContent = '$' + ingresos.toLocaleString('es-MX');
-  document.getElementById('fin-gastos').textContent = '$' + gastos.toLocaleString('es-MX');
+  const fmt = n => cop(Math.abs(n));
+  document.getElementById('fin-ingresos').textContent = cop(ingresos);
+  document.getElementById('fin-gastos').textContent = cop(gastos);
   const difEl = document.getElementById('fin-diferencia');
   difEl.textContent = (diferencia >= 0 ? '+' : '-') + fmt(diferencia);
   difEl.className = `text-2xl font-headline font-black ${diferencia >= 0 ? 'text-primary' : 'text-error'}`;
@@ -1705,7 +1705,7 @@ async function loadFinanzas() {
         </div>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <p class="font-headline font-bold ${f.tipo === 'ingreso' ? 'text-primary' : 'text-error'}">${f.tipo === 'ingreso' ? '+' : '-'}$${Number(f.monto).toLocaleString('es-MX')}</p>
+        <p class="font-headline font-bold ${f.tipo === 'ingreso' ? 'text-primary' : 'text-error'}">${f.tipo === 'ingreso' ? '+' : '-'}${cop(f.monto)}</p>
         <button onclick="deleteFinanza(${f.id})" class="text-slate-300 hover:text-error transition-colors p-1">
           <span class="material-symbols-outlined text-sm">delete</span>
         </button>
@@ -1752,8 +1752,8 @@ async function loadVentas() {
   const ingresos  = data.reduce((s, v) => s + Number(v.total), 0);
   const ganancia  = data.reduce((s, v) => s + Number(v.ganancia), 0);
   document.getElementById('ventas-hoy').textContent     = ventasHoy;
-  document.getElementById('ventas-ingresos').textContent = '$' + ingresos.toLocaleString('es-MX', {minimumFractionDigits:0,maximumFractionDigits:0});
-  document.getElementById('ventas-ganancia').textContent = '$' + ganancia.toLocaleString('es-MX', {minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('ventas-ingresos').textContent = cop(ingresos);
+  document.getElementById('ventas-ganancia').textContent = cop(ganancia);
   document.getElementById('ventas-total').textContent    = data.length;
 
   const lista = document.getElementById('ventas-lista');
@@ -1778,8 +1778,8 @@ async function loadVentas() {
         <p class="text-xs text-slate-400">${fecha}${v.cliente ? ' · ' + escHtml(v.cliente) : ''} · ${v.cantidad} und.</p>
       </div>
       <div class="text-right shrink-0">
-        <p class="font-bold text-on-surface">$${Number(v.total).toLocaleString('es-MX',{minimumFractionDigits:0})}</p>
-        <p class="text-xs ${gananciaColor} font-semibold">+$${Number(v.ganancia).toLocaleString('es-MX',{minimumFractionDigits:0})} gan.</p>
+        <p class="font-bold text-on-surface">${cop(v.total)}</p>
+        <p class="text-xs ${gananciaColor} font-semibold">+${cop(v.ganancia)} gan.</p>
       </div>
       <button onclick="deleteVenta(${v.id})" class="text-slate-300 hover:text-error transition-colors ml-2 shrink-0">
         <span class="material-symbols-outlined text-sm">delete</span>
@@ -1832,8 +1832,8 @@ function calcVentaPreview() {
   preview?.classList.remove('hidden');
   const el1 = document.getElementById('venta-prev-total');
   const el2 = document.getElementById('venta-prev-ganancia');
-  if (el1) el1.textContent = '$' + total.toLocaleString('es-MX',{minimumFractionDigits:0});
-  if (el2) el2.textContent = '$' + ganancia.toLocaleString('es-MX',{minimumFractionDigits:0});
+  if (el1) el1.textContent = cop(total);
+  if (el2) el2.textContent = cop(ganancia);
 }
 
 async function saveVenta() {
@@ -1886,7 +1886,7 @@ async function loadProductos() {
   document.getElementById('stock-total').textContent = total;
   document.getElementById('stock-bajo').textContent = bajo;
   document.getElementById('stock-mas-caro').textContent = masCaro ? escHtml(masCaro.nombre) : '—';
-  document.getElementById('stock-valor').textContent = '$' + valor.toLocaleString('es-MX');
+  document.getElementById('stock-valor').textContent = cop(valor);
   if (data.length === 0) {
     lista.innerHTML = `<div class="border-2 border-dashed border-outline-variant rounded-lg p-10 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all col-span-full" onclick="openModal('modal-producto')">
       <span class="material-symbols-outlined text-4xl text-slate-300">add_circle</span>
@@ -1911,7 +1911,7 @@ async function loadProductos() {
       </div>
       <div class="flex items-center justify-between">
         <div><p class="text-xs text-slate-500">En stock</p><p class="text-2xl font-headline font-black ${stockBajo ? 'text-error' : 'text-on-surface'}">${p.stock}</p></div>
-        <div class="text-right"><p class="text-xs text-slate-500">Precio</p><p class="text-lg font-headline font-bold text-primary">$${Number(p.precio_venta).toLocaleString('es-MX')}</p></div>
+        <div class="text-right"><p class="text-xs text-slate-500">Precio</p><p class="text-lg font-headline font-bold text-primary">${cop(p.precio_venta)}</p></div>
       </div>
       <div class="h-2 bg-surface-container rounded-full overflow-hidden">
         <div class="h-full ${stockBajo ? 'bg-error' : 'bg-primary'} rounded-full" style="width:${pct}%"></div>
@@ -2046,14 +2046,14 @@ async function loadMetas() {
         <p class="text-xs font-bold opacity-60 uppercase tracking-widest mb-2">Meta Principal</p>
         <h3 class="text-3xl font-headline font-bold mb-2">${escHtml(principal.titulo)}</h3>
         <div class="flex items-baseline gap-4 my-6">
-          <span class="text-5xl font-headline font-black text-primary-fixed-dim">$${Number(principal.monto_actual).toLocaleString('es-MX')}</span>
-          <span class="text-lg opacity-60">de $${Number(principal.monto_objetivo).toLocaleString('es-MX')}</span>
+          <span class="text-5xl font-headline font-black text-primary-fixed-dim">${cop(principal.monto_actual)}</span>
+          <span class="text-lg opacity-60">de ${cop(principal.monto_objetivo)}</span>
         </div>
         <div class="h-4 bg-white/10 rounded-full overflow-hidden mb-3">
           <div class="h-full bg-primary-fixed-dim rounded-full transition-all" style="width:${pct}%"></div>
         </div>
         <div class="flex justify-between items-center">
-          <p class="text-sm opacity-70">${pct}% completado · Faltan $${falta.toLocaleString('es-MX')}</p>
+          <p class="text-sm opacity-70">${pct}% completado · Faltan ${cop(falta)}</p>
           <button onclick="deleteMeta(${principal.id})" class="text-white/40 hover:text-red-300 transition-colors">
             <span class="material-symbols-outlined text-sm">delete</span>
           </button>
@@ -2071,7 +2071,7 @@ async function loadMetas() {
         <p class="font-headline font-bold text-sm">${escHtml(m.titulo)}</p>
         <span class="text-xs font-bold ${tc} ${bgc} px-2 py-1 rounded-full">${pct}%</span>
       </div>
-      <p class="text-2xl font-headline font-black text-on-surface mb-3">$${Number(m.monto_actual).toLocaleString('es-MX')} / $${Number(m.monto_objetivo).toLocaleString('es-MX')}</p>
+      <p class="text-2xl font-headline font-black text-on-surface mb-3">${cop(m.monto_actual)} / ${cop(m.monto_objetivo)}</p>
       <div class="h-2 bg-surface-container rounded-full overflow-hidden">
         <div class="h-full ${barc} rounded-full" style="width:${pct}%"></div>
       </div>
@@ -2110,7 +2110,7 @@ async function loadProyecciones() {
   if (ingresos === 0) return;
   const m1 = ingresos, m2 = Math.round(ingresos * 1.07), m3 = Math.round(ingresos * 1.07 * 1.07);
   const max = m3 * 1.2;
-  const fmt = n => '$' + n.toLocaleString('es-MX');
+  const fmt = n => cop(n);
   document.getElementById('proy-mes1').textContent = fmt(m1);
   document.getElementById('proy-mes2').textContent = fmt(m2);
   document.getElementById('proy-mes3').textContent = fmt(m3);
@@ -2510,6 +2510,11 @@ async function enviarTestEmail() {
 }
 
 // ── Utils ──
+// Formato moneda pesos colombianos
+function cop(n) {
+  return '$ ' + Number(n || 0).toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
