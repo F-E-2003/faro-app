@@ -202,6 +202,24 @@ async function initDB() {
       )`);
 
     await conn.query(`
+      CREATE TABLE IF NOT EXISTS ventas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        producto_id INT,
+        producto_nombre VARCHAR(150) NOT NULL,
+        cantidad INT NOT NULL DEFAULT 1,
+        precio_unitario DECIMAL(12,2) NOT NULL DEFAULT 0,
+        costo_unitario DECIMAL(12,2) NOT NULL DEFAULT 0,
+        total DECIMAL(12,2) NOT NULL DEFAULT 0,
+        ganancia DECIMAL(12,2) NOT NULL DEFAULT 0,
+        cliente VARCHAR(150) DEFAULT '',
+        notas TEXT DEFAULT '',
+        fecha DATE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+      )`);
+
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS metas (
         id INT AUTO_INCREMENT PRIMARY KEY,
         usuario_id INT NOT NULL,
@@ -625,6 +643,67 @@ app.put('/api/productos/:id', auth, async (req, res) => {
 app.delete('/api/productos/:id', auth, async (req, res) => {
   try { await q(`DELETE FROM productos WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]); res.json({ ok:true }); }
   catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── VENTAS ────────────────────────────────────────────────────────────────────
+app.get('/api/ventas', auth, async (req, res) => {
+  try {
+    const { desde, hasta, limite } = req.query;
+    let sql = `SELECT * FROM ventas WHERE usuario_id=?`;
+    const params = [req.user.id];
+    if (desde) { sql += ` AND fecha >= ?`; params.push(desde); }
+    if (hasta) { sql += ` AND fecha <= ?`; params.push(hasta); }
+    sql += ` ORDER BY created_at DESC`;
+    if (limite) { sql += ` LIMIT ?`; params.push(parseInt(limite)); }
+    res.json(await q(sql, params));
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/ventas', auth, async (req, res) => {
+  const { producto_id, cantidad, precio_unitario, cliente, notas, fecha } = req.body;
+  if (!cantidad || !precio_unitario) return res.status(400).json({ error: 'Cantidad y precio requeridos' });
+  const uid = req.user.id;
+  try {
+    let producto_nombre = req.body.producto_nombre || 'Producto manual';
+    let costo_unitario = parseFloat(req.body.costo_unitario || 0);
+
+    if (producto_id) {
+      const prods = await q(`SELECT nombre, costo_compra, stock FROM productos WHERE id=? AND usuario_id=?`, [producto_id, uid]);
+      if (!prods.length) return res.status(404).json({ error: 'Producto no encontrado' });
+      const prod = prods[0];
+      if (prod.stock < parseInt(cantidad)) return res.status(400).json({ error: `Stock insuficiente. Disponible: ${prod.stock}` });
+      producto_nombre = prod.nombre;
+      costo_unitario = parseFloat(prod.costo_compra || 0);
+      // Descontar del stock
+      await q(`UPDATE productos SET stock = stock - ? WHERE id=? AND usuario_id=?`, [parseInt(cantidad), producto_id, uid]);
+    }
+
+    const cant = parseInt(cantidad);
+    const precio = parseFloat(precio_unitario);
+    const total = cant * precio;
+    const ganancia = cant * (precio - costo_unitario);
+    const fechaVenta = fecha || new Date().toISOString().split('T')[0];
+
+    const r = await q(
+      `INSERT INTO ventas (usuario_id,producto_id,producto_nombre,cantidad,precio_unitario,costo_unitario,total,ganancia,cliente,notas,fecha) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      [uid, producto_id || null, producto_nombre, cant, precio, costo_unitario, total, ganancia, cliente||'', notas||'', fechaVenta]
+    );
+    res.json({ id: r.insertId, total, ganancia });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/ventas/:id', auth, async (req, res) => {
+  try {
+    const ventas = await q(`SELECT * FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
+    if (!ventas.length) return res.status(404).json({ error: 'Venta no encontrada' });
+    const v = ventas[0];
+    // Devolver stock al producto si aplica
+    if (v.producto_id) {
+      await q(`UPDATE productos SET stock = stock + ? WHERE id=? AND usuario_id=?`, [v.cantidad, v.producto_id, req.user.id]);
+    }
+    await q(`DELETE FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── PROVEEDORES ───────────────────────────────────────────────────────────────

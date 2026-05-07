@@ -314,6 +314,10 @@
       <span class="material-symbols-outlined">inventory_2</span>
       <span class="font-semibold text-sm">Stock Visual</span>
     </a>
+    <a class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer" data-view="ventas">
+      <span class="material-symbols-outlined">point_of_sale</span>
+      <span class="font-semibold text-sm">Ventas</span>
+    </a>
     <a class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer" data-view="proyecciones">
       <span class="material-symbols-outlined">trending_up</span>
       <span class="font-semibold text-sm">Proyecciones</span>
@@ -408,6 +412,7 @@
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="dashboard">Inicio</a>
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="finanzas">Finanzas</a>
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="stock">Inventario</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="ventas">Ventas</a>
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="proveedores">Proveedores</a>
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="metas">Metas</a>
         </nav>
@@ -627,6 +632,103 @@
               Contactar Proveedor <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VISTA: VENTAS ── -->
+    <div class="view fade-in" id="view-ventas">
+      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div>
+            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+              Tus ventas, <span class="text-primary italic">en tiempo real</span>
+            </h2>
+            <p class="text-xl text-on-surface-variant mt-4 font-body">Registra cada venta y lleva el control de tus ingresos.</p>
+          </div>
+          <button onclick="openVentaModal()" class="editorial-gradient text-white px-8 py-4 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 shrink-0">
+            <span class="material-symbols-outlined">add</span> Registrar Venta
+          </button>
+        </section>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Ventas Hoy</p>
+            <p class="text-3xl font-headline font-black text-on-surface" id="ventas-hoy">0</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Ingresos Totales</p>
+            <p class="text-2xl font-headline font-black text-primary" id="ventas-ingresos">$0</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Ganancia Total</p>
+            <p class="text-2xl font-headline font-black text-on-surface" id="ventas-ganancia">$0</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Total Registros</p>
+            <p class="text-3xl font-headline font-black text-on-surface" id="ventas-total">0</p>
+          </div>
+        </div>
+
+        <!-- Lista ventas -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-outline-variant flex items-center justify-between">
+            <h3 class="font-headline font-bold text-lg">Historial de Ventas</h3>
+            <div class="flex gap-2">
+              <input type="date" id="ventas-desde" class="text-sm border border-outline-variant rounded-full px-3 py-1.5 outline-none focus:border-primary" onchange="loadVentas()"/>
+              <input type="date" id="ventas-hasta" class="text-sm border border-outline-variant rounded-full px-3 py-1.5 outline-none focus:border-primary" onchange="loadVentas()"/>
+            </div>
+          </div>
+          <div id="ventas-lista" class="divide-y divide-outline-variant">
+            <p class="text-center text-slate-400 py-10">Cargando ventas...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Registrar Venta -->
+    <div id="modal-venta" class="modal-overlay hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+        <h3 class="font-headline font-bold text-xl mb-6" id="modal-venta-title">Registrar Venta</h3>
+        <div class="flex flex-col gap-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Producto</label>
+            <select id="venta-producto" onchange="onVentaProductoChange()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm">
+              <option value="">— Selecciona un producto —</option>
+            </select>
+          </div>
+          <div id="venta-manual-nombre-wrap" class="hidden">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Nombre del producto</label>
+            <input id="venta-manual-nombre" type="text" placeholder="Ej: Café especial" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Cantidad</label>
+              <input id="venta-cantidad" type="number" min="1" value="1" oninput="calcVentaPreview()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Precio unitario</label>
+              <input id="venta-precio" type="number" min="0" step="0.01" placeholder="0" oninput="calcVentaPreview()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Cliente (opcional)</label>
+            <input id="venta-cliente" type="text" placeholder="Nombre del cliente" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Fecha</label>
+            <input id="venta-fecha" type="date" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+          </div>
+          <!-- Preview total -->
+          <div id="venta-preview" class="bg-primary/5 rounded-xl px-4 py-3 text-sm hidden">
+            <div class="flex justify-between"><span class="text-slate-500">Total:</span> <strong id="venta-prev-total" class="text-primary">$0</strong></div>
+            <div class="flex justify-between mt-1"><span class="text-slate-500">Ganancia:</span> <strong id="venta-prev-ganancia" class="text-on-surface">$0</strong></div>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button onclick="closeModal('modal-venta')" class="flex-1 py-3 rounded-full border border-outline-variant text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
+          <button onclick="saveVenta()" class="flex-1 py-3 rounded-full editorial-gradient text-white font-bold shadow-sm">Guardar</button>
         </div>
       </div>
     </div>
@@ -1548,7 +1650,7 @@ async function apiFetch(path, options = {}) {
 
 // ── Load all data ──
 async function loadAllData() {
-  await Promise.all([loadDashboard(), loadFinanzas(), loadProductos(), loadProveedores(), loadMetas()]);
+  await Promise.all([loadDashboard(), loadFinanzas(), loadProductos(), loadProveedores(), loadMetas(), loadVentas()]);
   loadProyecciones();
 }
 
@@ -1629,6 +1731,148 @@ async function deleteFinanza(id) {
 }
 
 // ── Productos ──
+// ── VENTAS ────────────────────────────────────────────────────────────────────
+let _productosCache = [];
+
+async function loadVentas() {
+  const desde = document.getElementById('ventas-desde')?.value || '';
+  const hasta = document.getElementById('ventas-hasta')?.value || '';
+  let url = '/ventas';
+  const params = [];
+  if (desde) params.push(`desde=${desde}`);
+  if (hasta) params.push(`hasta=${hasta}`);
+  if (params.length) url += '?' + params.join('&');
+
+  const data = await apiFetch(url);
+  if (!data) return;
+
+  // Actualizar stats
+  const hoy = new Date().toISOString().split('T')[0];
+  const ventasHoy = data.filter(v => v.fecha && v.fecha.slice(0,10) === hoy).length;
+  const ingresos  = data.reduce((s, v) => s + Number(v.total), 0);
+  const ganancia  = data.reduce((s, v) => s + Number(v.ganancia), 0);
+  document.getElementById('ventas-hoy').textContent     = ventasHoy;
+  document.getElementById('ventas-ingresos').textContent = '$' + ingresos.toLocaleString('es-MX', {minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('ventas-ganancia').textContent = '$' + ganancia.toLocaleString('es-MX', {minimumFractionDigits:0,maximumFractionDigits:0});
+  document.getElementById('ventas-total').textContent    = data.length;
+
+  const lista = document.getElementById('ventas-lista');
+  if (!lista) return;
+  if (data.length === 0) {
+    lista.innerHTML = `<div class="flex flex-col items-center gap-3 py-16 text-slate-400">
+      <span class="material-symbols-outlined text-5xl">point_of_sale</span>
+      <p class="font-bold">No hay ventas registradas</p>
+      <button onclick="openModal('modal-venta')" class="mt-2 px-6 py-2 editorial-gradient text-white rounded-full font-bold text-sm">Registrar primera venta</button>
+    </div>`;
+    return;
+  }
+  lista.innerHTML = data.map(v => {
+    const fecha = v.fecha ? v.fecha.slice(0,10) : '—';
+    const gananciaColor = Number(v.ganancia) >= 0 ? 'text-primary' : 'text-error';
+    return `<div class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors">
+      <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-primary text-sm">shopping_cart</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-on-surface truncate">${escHtml(v.producto_nombre)}</p>
+        <p class="text-xs text-slate-400">${fecha}${v.cliente ? ' · ' + escHtml(v.cliente) : ''} · ${v.cantidad} und.</p>
+      </div>
+      <div class="text-right shrink-0">
+        <p class="font-bold text-on-surface">$${Number(v.total).toLocaleString('es-MX',{minimumFractionDigits:0})}</p>
+        <p class="text-xs ${gananciaColor} font-semibold">+$${Number(v.ganancia).toLocaleString('es-MX',{minimumFractionDigits:0})} gan.</p>
+      </div>
+      <button onclick="deleteVenta(${v.id})" class="text-slate-300 hover:text-error transition-colors ml-2 shrink-0">
+        <span class="material-symbols-outlined text-sm">delete</span>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+async function openVentaModal() {
+  // Cargar productos disponibles
+  const prods = await apiFetch('/productos');
+  _productosCache = prods || [];
+  const sel = document.getElementById('venta-producto');
+  if (sel) {
+    sel.innerHTML = `<option value="">— Producto manual —</option>` +
+      _productosCache.map(p => `<option value="${p.id}" data-precio="${p.precio_venta}" data-costo="${p.costo_compra||0}" data-stock="${p.stock}">${escHtml(p.nombre)} (stock: ${p.stock})</option>`).join('');
+  }
+  // Fecha default: hoy
+  const fd = document.getElementById('venta-fecha');
+  if (fd) fd.value = new Date().toISOString().split('T')[0];
+  document.getElementById('venta-preview')?.classList.add('hidden');
+  openModal('modal-venta');
+}
+
+function onVentaProductoChange() {
+  const sel = document.getElementById('venta-producto');
+  const manualWrap = document.getElementById('venta-manual-nombre-wrap');
+  const isManual = !sel.value;
+  manualWrap?.classList.toggle('hidden', !isManual);
+  if (!isManual) {
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('venta-precio').value = opt.dataset.precio || '';
+  }
+  calcVentaPreview();
+}
+
+function calcVentaPreview() {
+  const sel   = document.getElementById('venta-producto');
+  const cant  = parseFloat(document.getElementById('venta-cantidad')?.value) || 0;
+  const precio = parseFloat(document.getElementById('venta-precio')?.value) || 0;
+  const preview = document.getElementById('venta-preview');
+  if (!cant || !precio) { preview?.classList.add('hidden'); return; }
+  let costo = 0;
+  if (sel?.value) {
+    const opt = sel.options[sel.selectedIndex];
+    costo = parseFloat(opt?.dataset.costo || 0);
+  }
+  const total    = cant * precio;
+  const ganancia = cant * (precio - costo);
+  preview?.classList.remove('hidden');
+  const el1 = document.getElementById('venta-prev-total');
+  const el2 = document.getElementById('venta-prev-ganancia');
+  if (el1) el1.textContent = '$' + total.toLocaleString('es-MX',{minimumFractionDigits:0});
+  if (el2) el2.textContent = '$' + ganancia.toLocaleString('es-MX',{minimumFractionDigits:0});
+}
+
+async function saveVenta() {
+  const sel       = document.getElementById('venta-producto');
+  const prodId    = sel?.value ? parseInt(sel.value) : null;
+  const manualNom = document.getElementById('venta-manual-nombre')?.value.trim();
+  const cantidad  = parseInt(document.getElementById('venta-cantidad')?.value);
+  const precio    = parseFloat(document.getElementById('venta-precio')?.value);
+  const cliente   = document.getElementById('venta-cliente')?.value.trim();
+  const fecha     = document.getElementById('venta-fecha')?.value;
+
+  if (!prodId && !manualNom) { alert('Selecciona un producto o ingresa un nombre'); return; }
+  if (!cantidad || cantidad < 1) { alert('La cantidad debe ser al menos 1'); return; }
+  if (!precio || precio <= 0)    { alert('Ingresa un precio válido'); return; }
+
+  let costo_unitario = 0;
+  let producto_nombre = manualNom || '';
+  if (prodId && sel) {
+    const opt = sel.options[sel.selectedIndex];
+    costo_unitario = parseFloat(opt?.dataset.costo || 0);
+    producto_nombre = opt?.text.split(' (stock:')[0] || '';
+  }
+
+  const body = JSON.stringify({ producto_id: prodId, producto_nombre, cantidad, precio_unitario: precio, costo_unitario, cliente, fecha });
+  const res = await apiFetch('/ventas', { method: 'POST', body });
+  if (res && !res.error) {
+    closeModal('modal-venta');
+    loadVentas();
+    loadProductos();
+    loadDashboard();
+  }
+}
+
+async function deleteVenta(id) {
+  if (!confirm('¿Eliminar esta venta? El stock del producto será restaurado.')) return;
+  const res = await apiFetch(`/ventas/${id}`, { method: 'DELETE' });
+  if (res?.ok) { loadVentas(); loadProductos(); loadDashboard(); }
+}
+
 async function loadProductos() {
   const data = await apiFetch('/productos');
   if (!data) return;
@@ -1971,6 +2215,7 @@ function navigate(viewId) {
   const ma = document.querySelector(`.mobile-nav-btn[data-view="${viewId}"]`);
   if (ma) ma.classList.add('active');
   if (viewId === 'admin') loadAdminPanel();
+  if (viewId === 'ventas') loadVentas();
 }
 
 // ── Calculadoras ──
