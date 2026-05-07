@@ -689,6 +689,15 @@ app.post('/api/ventas', auth, async (req, res) => {
       `INSERT INTO ventas (usuario_id,producto_id,producto_nombre,cantidad,precio_unitario,costo_unitario,total,ganancia,cliente,notas,fecha) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
       [uid, producto_id || null, producto_nombre, cant, precio, costo_unitario, total, ganancia, cliente||'', notas||'', fechaVenta]
     );
+
+    // Auto-registrar la ganancia como ingreso en finanzas
+    if (ganancia > 0) {
+      await q(
+        `INSERT INTO finanzas (usuario_id, tipo, monto, descripcion, categoria, fecha) VALUES (?,?,?,?,?,?)`,
+        [uid, 'ingreso', ganancia, `Venta: ${producto_nombre}${cant > 1 ? ' x'+cant : ''}`, 'Ventas', fechaVenta]
+      );
+    }
+
     res.json({ id: r.insertId, total, ganancia });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
@@ -703,6 +712,11 @@ app.delete('/api/ventas/:id', auth, async (req, res) => {
       await q(`UPDATE productos SET stock = stock + ? WHERE id=? AND usuario_id=?`, [v.cantidad, v.producto_id, req.user.id]);
     }
     await q(`DELETE FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
+    // Eliminar el ingreso auto-registrado de finanzas si existe
+    await q(
+      `DELETE FROM finanzas WHERE usuario_id=? AND categoria='Ventas' AND descripcion LIKE ? AND fecha=? AND tipo='ingreso' LIMIT 1`,
+      [req.user.id, `Venta: ${v.producto_nombre}%`, v.fecha ? v.fecha.toISOString().split('T')[0] : v.fecha]
+    );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });

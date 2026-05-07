@@ -540,18 +540,26 @@
         </section>
 
         <!-- Resumen stats -->
-        <div class="grid grid-cols-3 gap-6 mb-8">
-          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Ingresos</p>
-            <p class="text-2xl font-headline font-black text-primary" id="fin-ingresos">$0</p>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-surface-container-lowest rounded-lg p-5 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Ingreso Total</p>
+            <p class="text-xl font-headline font-black text-primary" id="fin-ingresos">$ 0</p>
+            <p class="text-xs text-slate-400 mt-1">Ingresos + ventas</p>
           </div>
-          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
+          <div class="bg-surface-container-lowest rounded-lg p-5 shadow-sm">
             <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Gastos</p>
-            <p class="text-2xl font-headline font-black text-secondary" id="fin-gastos">$0</p>
+            <p class="text-xl font-headline font-black text-error" id="fin-gastos">$ 0</p>
+            <p class="text-xs text-slate-400 mt-1">Total egresos</p>
           </div>
-          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Diferencia</p>
-            <p class="text-2xl font-headline font-black text-on-surface" id="fin-diferencia">$0</p>
+          <div class="bg-surface-container-lowest rounded-lg p-5 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Ganancia Ventas</p>
+            <p class="text-xl font-headline font-black text-on-surface" id="fin-ganancia-ventas">$ 0</p>
+            <p class="text-xs text-slate-400 mt-1">Precio venta − costo</p>
+          </div>
+          <div class="bg-surface-container-lowest rounded-lg p-5 shadow-sm">
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Saldo Neto</p>
+            <p class="text-xl font-headline font-black" id="fin-diferencia">$ 0</p>
+            <p class="text-xs text-slate-400 mt-1">Ingresos − gastos</p>
           </div>
         </div>
 
@@ -1676,17 +1684,20 @@ async function loadDashboard() {
 
 // ── Finanzas ──
 async function loadFinanzas() {
-  const data = await apiFetch('/finanzas');
+  const [data, ventasData] = await Promise.all([apiFetch('/finanzas'), apiFetch('/ventas')]);
   if (!data) return;
-  const ingresos = data.filter(f => f.tipo === 'ingreso').reduce((s, f) => s + Number(f.monto), 0);
-  const gastos = data.filter(f => f.tipo === 'gasto').reduce((s, f) => s + Number(f.monto), 0);
+  const ingresos   = data.filter(f => f.tipo === 'ingreso').reduce((s, f) => s + Number(f.monto), 0);
+  const gastos     = data.filter(f => f.tipo === 'gasto').reduce((s, f) => s + Number(f.monto), 0);
   const diferencia = ingresos - gastos;
-  const fmt = n => cop(Math.abs(n));
+  const gananciaVentas = (ventasData || []).reduce((s, v) => s + Number(v.ganancia), 0);
+
   document.getElementById('fin-ingresos').textContent = cop(ingresos);
-  document.getElementById('fin-gastos').textContent = cop(gastos);
+  document.getElementById('fin-gastos').textContent   = cop(gastos);
+  const gvEl = document.getElementById('fin-ganancia-ventas');
+  if (gvEl) gvEl.textContent = cop(gananciaVentas);
   const difEl = document.getElementById('fin-diferencia');
-  difEl.textContent = (diferencia >= 0 ? '+' : '-') + fmt(diferencia);
-  difEl.className = `text-2xl font-headline font-black ${diferencia >= 0 ? 'text-primary' : 'text-error'}`;
+  difEl.textContent = (diferencia >= 0 ? '+' : '-') + cop(Math.abs(diferencia));
+  difEl.className = `text-xl font-headline font-black ${diferencia >= 0 ? 'text-primary' : 'text-error'}`;
   const lista = document.getElementById('finanzas-lista');
   if (!lista) return;
   if (data.length === 0) {
