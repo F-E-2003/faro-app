@@ -407,6 +407,33 @@ app.post('/api/suscripcion/activar', auth, async (req, res) => {
 });
 
 // ── ADMIN ─────────────────────────────────────────────────────────────────────
+app.get('/api/admin/usuarios', adminAuth, async (req, res) => {
+  try {
+    const rows = await q(`
+      SELECT u.id, u.nombre, u.email, u.nombre_negocio, u.estado_suscripcion, u.created_at,
+             s.fecha_fin, s.metodo_pago
+      FROM usuarios u
+      LEFT JOIN suscripciones s ON s.usuario_id = u.id
+        AND s.estado IN ('activo','pendiente')
+        AND s.id = (SELECT MAX(s2.id) FROM suscripciones s2 WHERE s2.usuario_id = u.id)
+      WHERE u.es_admin = 0
+      ORDER BY u.created_at DESC
+    `);
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/admin/usuarios/:id', adminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const users = await q(`SELECT es_admin FROM usuarios WHERE id=?`, [id]);
+    if (!users.length) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (users[0].es_admin) return res.status(403).json({ error: 'No puedes eliminar un administrador' });
+    await q(`DELETE FROM usuarios WHERE id=?`, [id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 app.get('/api/admin/suscripciones', adminAuth, async (req, res) => {
   try {
     const rows = await q(`

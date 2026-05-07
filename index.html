@@ -1158,73 +1158,92 @@
      ADMIN VIEW
 ══════════════════════════════════════════ -->
     <div class="view fade-in" id="view-admin">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <div class="flex items-center justify-between mb-8">
-          <div>
-            <h2 class="text-3xl font-headline font-extrabold">Panel de Administración</h2>
-            <p class="text-slate-500 mt-1">Gestión de suscripciones y tokens</p>
+      <!-- Header verde -->
+      <div style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)" class="px-8 py-8 text-white">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(255,255,255,0.15)">
+              <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
+            </div>
+            <div>
+              <h2 class="text-2xl font-headline font-extrabold tracking-tight">Panel de Administración</h2>
+              <p class="text-white/70 text-sm mt-0.5">Faro · Gestión de usuarios y suscripciones</p>
+            </div>
           </div>
-          <button onclick="loadAdminPanel()" class="editorial-gradient text-white px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+          <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
             <span class="material-symbols-outlined text-sm">refresh</span> Actualizar
           </button>
         </div>
+      </div>
 
-        <!-- KPIs Admin -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" id="admin-kpis">
-          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
-            <p class="text-xs font-bold text-slate-400 uppercase">Suscripciones activas</p>
-            <p class="text-4xl font-headline font-black text-[#006d43] mt-1" id="admin-activas">—</p>
+      <div class="p-6 lg:p-8 max-w-5xl mx-auto w-full">
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-3 gap-4 mb-8">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-green-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[#006d43]">verified</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Activas</p>
+              <p class="text-3xl font-headline font-black text-[#006d43]" id="admin-activas">—</p>
+            </div>
           </div>
-          <div class="bg-amber-50 rounded-2xl p-6 shadow-sm">
-            <p class="text-xs font-bold text-amber-500 uppercase">Pagos pendientes</p>
-            <p class="text-4xl font-headline font-black text-amber-600 mt-1" id="admin-pendientes-count">—</p>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-amber-500">schedule</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pendientes</p>
+              <p class="text-3xl font-headline font-black text-amber-500" id="admin-pendientes-count">—</p>
+            </div>
           </div>
-          <div class="bg-red-50 rounded-2xl p-6 shadow-sm">
-            <p class="text-xs font-bold text-red-400 uppercase">Por vencer (5 días)</p>
-            <p class="text-4xl font-headline font-black text-red-500 mt-1" id="admin-por-vencer-count">—</p>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-red-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-red-400">timer</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Por vencer</p>
+              <p class="text-3xl font-headline font-black text-red-400" id="admin-por-vencer-count">—</p>
+            </div>
           </div>
         </div>
 
         <!-- Solicitudes pendientes -->
-        <div class="bg-surface-container-lowest rounded-2xl shadow-sm mb-6">
-          <div class="p-6 border-b border-outline-variant/20">
-            <h3 class="font-bold text-lg flex items-center gap-2">
-              <span class="material-symbols-outlined text-amber-500">pending_actions</span>
-              Solicitudes pendientes de validación
-            </h3>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-500">pending_actions</span>
+            <h3 class="font-bold text-base text-slate-700">Solicitudes pendientes de validación</h3>
           </div>
           <div id="admin-pendientes-lista" class="p-6">
             <p class="text-slate-400 text-sm text-center py-4">Cargando...</p>
           </div>
         </div>
 
-        <!-- Todas las suscripciones -->
-        <div class="bg-surface-container-lowest rounded-2xl shadow-sm">
-          <div class="p-6 border-b border-outline-variant/20">
-            <h3 class="font-bold text-lg flex items-center gap-2">
-              <span class="material-symbols-outlined text-[#006d43]">manage_accounts</span>
-              Historial completo
-            </h3>
+        <!-- Usuarios registrados -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#006d43]">group</span>
+            <h3 class="font-bold text-base text-slate-700">Usuarios registrados</h3>
           </div>
-          <div id="admin-todas-lista" class="overflow-x-auto">
+          <div class="overflow-x-auto">
             <table class="w-full text-sm">
-              <thead class="bg-surface-container">
-                <tr>
-                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Usuario</th>
-                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Método</th>
-                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Referencia</th>
-                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Estado</th>
-                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Token</th>
-                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Vence</th>
-                  <th class="p-4"></th>
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</th>
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Negocio</th>
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Vence</th>
+                  <th class="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody id="admin-tabla-body">
-                <tr><td colspan="7" class="text-center text-slate-400 py-8">Cargando...</td></tr>
+                <tr><td colspan="5" class="text-center text-slate-400 py-10">Cargando...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
+
       </div>
     </div>
 
@@ -1354,17 +1373,34 @@ function enterApp(user, diasRestantes) {
   document.getElementById('header-user-name').textContent = name;
   document.getElementById('header-avatar').textContent = name.charAt(0).toUpperCase();
 
-  // Mostrar Admin en sidebar si es admin
-  const adminLink = document.getElementById('sidebar-admin');
-  if (user.es_admin) adminLink.classList.remove('hidden');
-  else adminLink.classList.add('hidden');
-
-  // Alerta día 29
-  if (diasRestantes !== null && diasRestantes <= 1 && diasRestantes >= 0) {
-    document.getElementById('modal-renovar').classList.remove('hidden');
+  if (user.es_admin) {
+    // Admin: ocultar todo nav de negocio, mostrar solo Admin Panel
+    document.querySelectorAll('#sidebar-nav .nav-item').forEach(el => {
+      if (el.id === 'sidebar-admin') {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    });
+    // Ocultar separador y botón Mentor IA del sidebar
+    document.querySelectorAll('#sidebar-nav .h-px').forEach(el => el.classList.add('hidden'));
+    const mentorBtn = document.querySelector('.mt-auto button[onclick="toggleChat()"]');
+    if (mentorBtn) mentorBtn.classList.add('hidden');
+    // Ocultar top nav de negocio
+    const topNav = document.getElementById('top-nav');
+    if (topNav) topNav.classList.add('hidden');
+    // Ir directo al admin panel
+    navigate('admin');
+    loadAdminPanel();
+  } else {
+    // Usuario normal: asegurarse de que todo es visible y cargar datos
+    document.getElementById('sidebar-admin').classList.add('hidden');
+    loadAllData();
+    // Alerta día 29
+    if (diasRestantes !== null && diasRestantes <= 1 && diasRestantes >= 0) {
+      document.getElementById('modal-renovar').classList.remove('hidden');
+    }
   }
-
-  loadAllData();
 }
 
 async function doLogin() {
@@ -1889,53 +1925,78 @@ function calcReinversion() {
 // ── Admin Panel ───────────────────────────────────────────────────────────────
 async function loadAdminPanel() {
   try {
-    const [alertas, subs] = await Promise.all([
+    const [alertas, usuarios] = await Promise.all([
       apiFetch('/admin/alertas'),
-      apiFetch('/admin/suscripciones'),
+      apiFetch('/admin/usuarios'),
     ]);
 
     document.getElementById('admin-activas').textContent = alertas.activas ?? '—';
     document.getElementById('admin-pendientes-count').textContent = alertas.pendientes?.length ?? '0';
     document.getElementById('admin-por-vencer-count').textContent = alertas.por_vencer?.length ?? '0';
 
-    // Pendientes
+    // Solicitudes pendientes
     const listaEl = document.getElementById('admin-pendientes-lista');
     if (!alertas.pendientes?.length) {
-      listaEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No hay solicitudes pendientes</p>';
+      listaEl.innerHTML = `
+        <div class="flex flex-col items-center py-8 text-slate-400 gap-2">
+          <span class="material-symbols-outlined text-4xl">check_circle</span>
+          <p class="text-sm font-medium">Sin solicitudes pendientes</p>
+        </div>`;
     } else {
       listaEl.innerHTML = alertas.pendientes.map(p => `
-        <div class="border border-outline-variant/30 rounded-2xl p-4 mb-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <p class="font-bold">${escHtml(p.nombre)} <span class="text-xs font-normal text-slate-400">(${escHtml(p.email)})</span></p>
-            <p class="text-sm text-slate-500">${escHtml(p.nombre_negocio || '—')}</p>
-            <p class="text-sm mt-1"><span class="font-semibold">${escHtml(p.metodo_pago)}</span> · Ref: <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${escHtml(p.referencia_pago)}</span></p>
-            <p class="text-xs text-slate-400 mt-1">Solicitado: ${new Date(p.created_at).toLocaleString('es-CO')}</p>
+        <div class="border border-slate-100 rounded-2xl p-5 mb-3 last:mb-0 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-200 hover:bg-amber-50/30 transition-colors">
+          <div class="flex items-start gap-4">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-bold text-white text-lg" style="background:linear-gradient(135deg,#006d43,#00a86b)">
+              ${escHtml((p.nombre||'?').charAt(0).toUpperCase())}
+            </div>
+            <div>
+              <p class="font-bold text-slate-800">${escHtml(p.nombre)} <span class="text-xs font-normal text-slate-400">${escHtml(p.email)}</span></p>
+              <p class="text-sm text-slate-500 mt-0.5">${escHtml(p.nombre_negocio || 'Sin nombre de negocio')}</p>
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <span class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">${escHtml(p.metodo_pago)}</span>
+                <span class="font-mono text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">${escHtml(p.referencia_pago)}</span>
+                <span class="text-xs text-slate-400">${new Date(p.created_at).toLocaleDateString('es-CO')}</span>
+              </div>
+            </div>
           </div>
-          <button onclick="generarToken(${p.id})" class="shrink-0 editorial-gradient text-white px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
+          <button onclick="generarToken(${p.id})" class="shrink-0 editorial-gradient text-white px-5 py-2.5 rounded-full text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
             <span class="material-symbols-outlined text-sm">key</span> Generar Token
           </button>
         </div>`).join('');
     }
 
-    // Tabla completa
+    // Tabla de usuarios
     const tbody = document.getElementById('admin-tabla-body');
-    if (!subs.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">Sin registros</td></tr>';
+    if (!usuarios || !usuarios.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-10">Sin usuarios registrados</td></tr>';
     } else {
       const estadoBadge = e => ({
-        pendiente: '<span class="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">Pendiente</span>',
-        activo:    '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">Activo</span>',
-        vencido:   '<span class="bg-red-100 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">Vencido</span>',
-      }[e] || e);
-      tbody.innerHTML = subs.map(s => `
-        <tr class="border-t border-outline-variant/10 hover:bg-surface-container/50">
-          <td class="p-4"><p class="font-semibold text-sm">${escHtml(s.nombre)}</p><p class="text-xs text-slate-400">${escHtml(s.email)}</p></td>
-          <td class="p-4 text-sm">${escHtml(s.metodo_pago||'—')}</td>
-          <td class="p-4"><span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${escHtml((s.referencia_pago||'').substring(0,30))}</span></td>
-          <td class="p-4">${estadoBadge(s.estado)}</td>
-          <td class="p-4"><span class="font-mono text-xs ${s.token ? 'text-[#006d43] font-bold' : 'text-slate-300'}">${escHtml(s.token||'—')}</span></td>
-          <td class="p-4 text-xs text-slate-500">${s.fecha_fin ? new Date(s.fecha_fin).toLocaleDateString('es-CO') : '—'}</td>
-          <td class="p-4">${s.estado==='pendiente' ? `<button onclick="generarToken(${s.id})" class="editorial-gradient text-white px-3 py-1 rounded-full text-xs font-bold">Generar Token</button>` : ''}</td>
+        sin_plan: '<span class="bg-slate-100 text-slate-500 text-xs font-bold px-2.5 py-1 rounded-full">Sin plan</span>',
+        pendiente:'<span class="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">Pendiente</span>',
+        activo:   '<span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">✓ Activo</span>',
+        vencido:  '<span class="bg-red-100 text-red-500 text-xs font-bold px-2.5 py-1 rounded-full">Vencido</span>',
+      }[e] || `<span class="text-xs text-slate-400">${e}</span>`);
+      tbody.innerHTML = usuarios.map(u => `
+        <tr class="border-t border-slate-100 hover:bg-slate-50/60 transition-colors">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0" style="background:linear-gradient(135deg,#006d43,#00a86b)">
+                ${escHtml((u.nombre||'?').charAt(0).toUpperCase())}
+              </div>
+              <div>
+                <p class="font-semibold text-sm text-slate-800">${escHtml(u.nombre)}</p>
+                <p class="text-xs text-slate-400">${escHtml(u.email)}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-600">${escHtml(u.nombre_negocio || '—')}</td>
+          <td class="px-6 py-4">${estadoBadge(u.estado_suscripcion)}</td>
+          <td class="px-6 py-4 text-xs text-slate-500">${u.fecha_fin ? new Date(u.fecha_fin).toLocaleDateString('es-CO') : '—'}</td>
+          <td class="px-6 py-4 text-right">
+            <button onclick="eliminarUsuario(${u.id},'${escJs(u.nombre)}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-colors" title="Eliminar cuenta">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </td>
         </tr>`).join('');
     }
   } catch (e) {
@@ -1944,15 +2005,22 @@ async function loadAdminPanel() {
 }
 
 async function generarToken(subId) {
-  if (!confirm('¿Confirmas que el pago fue recibido y deseas generar el token?')) return;
+  if (!confirm('¿Confirmas que el pago fue recibido y deseas generar el token de activación?')) return;
   try {
     const data = await apiFetch(`/admin/generar-token/${subId}`, { method: 'POST', body: JSON.stringify({}) });
     if (!data || data.error) throw new Error((data && data.error) || 'Error al generar token');
     alert('✅ Token generado: ' + data.token + '\n\nFue enviado al correo del usuario.');
     loadAdminPanel();
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
+  } catch (e) { alert('Error: ' + e.message); }
+}
+
+async function eliminarUsuario(uid, nombre) {
+  if (!confirm(`¿Eliminar la cuenta de "${nombre}"?\n\nEsta acción no se puede deshacer.`)) return;
+  try {
+    const data = await apiFetch(`/admin/usuarios/${uid}`, { method: 'DELETE', body: JSON.stringify({}) });
+    if (!data || data.error) throw new Error((data && data.error) || 'Error al eliminar');
+    loadAdminPanel();
+  } catch (e) { alert('Error: ' + e.message); }
 }
 
 // ── Utils ──
