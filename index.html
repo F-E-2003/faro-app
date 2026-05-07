@@ -345,11 +345,48 @@
       <span class="font-semibold text-sm">Admin Panel</span>
     </a>
   </nav>
+
+  <!-- Admin sidebar content (hidden for regular users) -->
+  <div id="admin-sidebar-content" class="hidden px-6 mt-6 flex flex-col gap-4">
+    <!-- Tarjeta perfil admin -->
+    <div class="rounded-2xl p-4" style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-bold text-white text-lg" id="admin-sidebar-avatar">A</div>
+        <div>
+          <p class="font-bold text-white text-sm leading-tight" id="admin-sidebar-nombre">Admin</p>
+          <p class="text-white/70 text-xs">Administrador</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-white/15 rounded-xl p-2.5 text-center">
+          <p class="text-white font-black text-xl font-headline" id="sidebar-stat-activas">—</p>
+          <p class="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Activas</p>
+        </div>
+        <div class="bg-white/15 rounded-xl p-2.5 text-center">
+          <p class="text-white font-black text-xl font-headline" id="sidebar-stat-pendientes">—</p>
+          <p class="text-white/70 text-[10px] font-semibold uppercase tracking-wide">Pendientes</p>
+        </div>
+      </div>
+    </div>
+    <!-- Info -->
+    <div class="bg-white/60 rounded-2xl p-4 flex flex-col gap-2">
+      <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones rápidas</p>
+      <button onclick="loadAdminPanel()" class="flex items-center gap-2 text-sm text-[#006d43] font-semibold hover:bg-[#006d43]/10 px-2 py-1.5 rounded-xl transition-colors w-full text-left">
+        <span class="material-symbols-outlined text-base">refresh</span> Actualizar panel
+      </button>
+      <button onclick="logout()" class="flex items-center gap-2 text-sm text-red-400 font-semibold hover:bg-red-50 px-2 py-1.5 rounded-xl transition-colors w-full text-left">
+        <span class="material-symbols-outlined text-base">logout</span> Cerrar sesión
+      </button>
+    </div>
+    <!-- Versión -->
+    <p class="text-center text-[10px] text-slate-400 font-medium">Faro Admin · v1.0</p>
+  </div>
+
   <div class="mt-auto px-6 flex flex-col gap-3">
-    <button onclick="toggleChat()" class="w-full bg-surface-container-lowest border border-primary/20 text-primary py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all">
+    <button id="sidebar-mentor-btn" onclick="toggleChat()" class="w-full bg-surface-container-lowest border border-primary/20 text-primary py-3 rounded-full font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all">
       <span class="material-symbols-outlined text-sm">smart_toy</span> Mentor IA
     </button>
-    <button onclick="logout()" class="w-full text-slate-400 py-2 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:text-error transition-colors">
+    <button id="sidebar-logout-btn" onclick="logout()" class="w-full text-slate-400 py-2 rounded-full font-bold text-xs flex items-center justify-center gap-2 hover:text-error transition-colors">
       <span class="material-symbols-outlined text-sm">logout</span> Cerrar sesión
     </button>
   </div>
@@ -1395,11 +1432,21 @@ function enterApp(user, diasRestantes) {
     // Cambiar subtítulo del sidebar
     const sub = document.getElementById('sidebar-subtitle');
     if (sub) sub.textContent = 'Administración';
-    // Ocultar botones de usuario normal en header
+    // Mostrar tarjeta admin en sidebar, ocultar botones de usuario normal
     const mentorBtn = document.getElementById('header-mentor-btn');
     if (mentorBtn) mentorBtn.style.display = 'none';
-    const sidebarMentorBtn = document.querySelector('.mt-auto button[onclick="toggleChat()"]');
+    const sidebarMentorBtn = document.getElementById('sidebar-mentor-btn');
     if (sidebarMentorBtn) sidebarMentorBtn.style.display = 'none';
+    const sidebarLogout = document.getElementById('sidebar-logout-btn');
+    if (sidebarLogout) sidebarLogout.style.display = 'none';
+    // Mostrar contenido admin en sidebar
+    const adminSidebarContent = document.getElementById('admin-sidebar-content');
+    if (adminSidebarContent) { adminSidebarContent.classList.remove('hidden'); adminSidebarContent.style.display = 'flex'; }
+    // Nombre y avatar admin en sidebar
+    const sidebarNombre = document.getElementById('admin-sidebar-nombre');
+    const sidebarAvatar = document.getElementById('admin-sidebar-avatar');
+    if (sidebarNombre) sidebarNombre.textContent = name;
+    if (sidebarAvatar) sidebarAvatar.textContent = name.charAt(0).toUpperCase();
     // Ocultar header completo para admin (el panel verde es su propio header)
     const appHeader = document.getElementById('app-header');
     if (appHeader) appHeader.style.display = 'none';
@@ -1963,6 +2010,11 @@ async function loadAdminPanel() {
     document.getElementById('admin-activas').textContent = alertas.activas ?? '—';
     document.getElementById('admin-pendientes-count').textContent = alertas.pendientes?.length ?? '0';
     document.getElementById('admin-por-vencer-count').textContent = alertas.por_vencer?.length ?? '0';
+    // Actualizar mini stats del sidebar
+    const ss1 = document.getElementById('sidebar-stat-activas');
+    const ss2 = document.getElementById('sidebar-stat-pendientes');
+    if (ss1) ss1.textContent = alertas.activas ?? '—';
+    if (ss2) ss2.textContent = alertas.pendientes?.length ?? '0';
 
     // Solicitudes pendientes
     const listaEl = document.getElementById('admin-pendientes-lista');
