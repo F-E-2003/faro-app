@@ -35,9 +35,7 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim
 const PRECIO_PLAN  = 150000; // COP
 
 // ── EMAIL ─────────────────────────────────────────────────────────────────────
-// Prioridad: 1) Resend API (recomendado, no bloquea firewalls)
-//            2) SMTP nodemailer (fallback)
-//            3) Simulado (log en consola)
+// Usa SMTP (Mailjet) → si falla, simula en consola
 
 function buildEmailHtml(nombre, token) {
   return `
@@ -89,20 +87,16 @@ function getTransporter() {
 }
 
 async function testSMTP() {
-  if (process.env.RESEND_API_KEY) {
-    console.log(`✅ Email configurado con Resend API`);
-    return;
-  }
   const t = getTransporter();
   if (!t) {
-    console.warn('⚠️  Email no configurado. Los tokens solo se mostrarán en pantalla.');
+    console.warn('⚠️  SMTP no configurado (SMTP_HOST, SMTP_USER, SMTP_PASS). Los tokens solo se mostrarán en pantalla.');
     return;
   }
   try {
     await t.verify();
     console.log(`✅ SMTP conectado (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587})`);
   } catch (err) {
-    console.error(`❌ SMTP ERROR: ${err.message} — considera usar RESEND_API_KEY en su lugar.`);
+    console.error(`❌ SMTP ERROR al arrancar: ${err.message}`);
   }
 }
 
@@ -110,18 +104,6 @@ async function sendTokenEmail(email, nombre, token) {
   const html = buildEmailHtml(nombre, token);
   const subject = `Tu token de acceso Faro: ${token}`;
 
-  // Intentar Resend primero
-  if (process.env.RESEND_API_KEY) {
-    try {
-      await sendViaResend(email, subject, html);
-      console.log(`✅ Token enviado por Resend a ${email}`);
-      return true;
-    } catch (err) {
-      console.warn(`⚠️ Resend falló (${err.message}). Intentando SMTP...`);
-    }
-  }
-
-  // Fallback a SMTP
   const transporter = getTransporter();
   if (transporter) {
     try {
@@ -500,42 +482,28 @@ app.post('/api/admin/test-email', adminAuth, async (req, res) => {
 
   const html = `<div style="font-family:sans-serif;padding:24px;max-width:480px">
     <h2 style="color:#006d43">✅ Email de prueba — Faro App</h2>
-    <p>Si ves este mensaje, el servidor de Faro está enviando emails correctamente.</p>
+    <p>Si ves este mensaje, el servidor de Faro está enviando emails correctamente vía Mailjet.</p>
     <p style="color:#888;font-size:12px">Faro — Tu Copiloto de Negocio</p>
   </div>`;
   const subject = '✅ Prueba de email — Faro App';
 
-  // Intentar Resend
-  if (process.env.RESEND_API_KEY) {
-    try {
-      await sendViaResend(destino, subject, html);
-      console.log(`✅ Test email enviado por Resend a ${destino}`);
-      return res.json({ ok: true, mensaje: `Email enviado a ${destino} vía Resend ✅` });
-    } catch (err) {
-      console.warn(`⚠️ Resend test falló: ${err.message}`);
-      return res.json({ ok: false, mensaje: `Error Resend: ${err.message}` });
-    }
-  }
-
-  // Intentar SMTP
   const t = getTransporter();
   if (!t) {
     return res.json({
       ok: false,
       diagnostico: {
-        RESEND_API_KEY: '❌ NO DEFINIDA (recomendado)',
         SMTP_HOST: process.env.SMTP_HOST || '❌ NO DEFINIDA',
         SMTP_PORT: process.env.SMTP_PORT || '587 (default)',
         SMTP_USER: process.env.SMTP_USER || '❌ NO DEFINIDA',
         SMTP_PASS: process.env.SMTP_PASS ? `✅ (${process.env.SMTP_PASS.length} chars)` : '❌ NO DEFINIDA',
       },
-      mensaje: 'No hay configuración de email. Agrega RESEND_API_KEY en Railway.'
+      mensaje: 'SMTP no configurado. Verifica las variables SMTP_HOST, SMTP_USER y SMTP_PASS en Railway.'
     });
   }
   try {
     await t.sendMail({ from: `"Faro App" <${process.env.SMTP_USER}>`, to: destino, subject, html });
-    console.log(`✅ Test email enviado por SMTP a ${destino}`);
-    res.json({ ok: true, mensaje: `Email enviado a ${destino} vía SMTP ✅` });
+    console.log(`✅ Test email enviado a ${destino}`);
+    res.json({ ok: true, mensaje: `Email enviado a ${destino} ✅` });
   } catch (err) {
     console.error(`❌ Test SMTP falló: ${err.message}`);
     res.json({ ok: false, mensaje: `Error SMTP: ${err.message}` });
