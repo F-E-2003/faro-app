@@ -19,9 +19,12 @@ const FRONTEND_PATH = [
   join(process.cwd(), 'index.html'),     // Railway cwd
 ].find(existsSync) ?? join(__dirname, '../../index.html');
 
+const STATIC_PATH = join(FRONTEND_PATH, '..');
+
 const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+app.use(express.static(STATIC_PATH));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'faro_copiloto_2026';
 const DB_NAME = process.env.DB_NAME || 'faro_negocio';
