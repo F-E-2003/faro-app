@@ -690,13 +690,12 @@ app.post('/api/ventas', auth, async (req, res) => {
       [uid, producto_id || null, producto_nombre, cant, precio, costo_unitario, total, ganancia, cliente||'', notas||'', fechaVenta]
     );
 
-    // Auto-registrar la ganancia como ingreso en finanzas
-    if (ganancia > 0) {
-      await q(
-        `INSERT INTO finanzas (usuario_id, tipo, monto, descripcion, categoria, fecha) VALUES (?,?,?,?,?,?)`,
-        [uid, 'ingreso', ganancia, `Venta: ${producto_nombre}${cant > 1 ? ' x'+cant : ''}`, 'Ventas', fechaVenta]
-      );
-    }
+    // Auto-registrar el TOTAL de la venta como ingreso en finanzas
+    const descFinanza = `Venta: ${producto_nombre}${cant > 1 ? ' x'+cant : ''}`;
+    await q(
+      `INSERT INTO finanzas (usuario_id, tipo, monto, descripcion, categoria, fecha) VALUES (?,?,?,?,?,?)`,
+      [uid, 'ingreso', total, descFinanza, 'Ventas', fechaVenta]
+    );
 
     res.json({ id: r.insertId, total, ganancia });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -707,16 +706,24 @@ app.delete('/api/ventas/:id', auth, async (req, res) => {
     const ventas = await q(`SELECT * FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
     if (!ventas.length) return res.status(404).json({ error: 'Venta no encontrada' });
     const v = ventas[0];
+
     // Devolver stock al producto si aplica
     if (v.producto_id) {
       await q(`UPDATE productos SET stock = stock + ? WHERE id=? AND usuario_id=?`, [v.cantidad, v.producto_id, req.user.id]);
     }
-    await q(`DELETE FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
-    // Eliminar el ingreso auto-registrado de finanzas si existe
+
+    // Eliminar el ingreso auto-registrado en finanzas
+    // Normalizar fecha: MySQL puede devolver Date o string
+    const fechaStr = v.fecha instanceof Date
+      ? v.fecha.toISOString().split('T')[0]
+      : String(v.fecha).slice(0, 10);
+    const descFinanza = `Venta: ${v.producto_nombre}${parseInt(v.cantidad) > 1 ? ' x'+v.cantidad : ''}`;
     await q(
-      `DELETE FROM finanzas WHERE usuario_id=? AND categoria='Ventas' AND descripcion LIKE ? AND fecha=? AND tipo='ingreso' LIMIT 1`,
-      [req.user.id, `Venta: ${v.producto_nombre}%`, v.fecha ? v.fecha.toISOString().split('T')[0] : v.fecha]
+      `DELETE FROM finanzas WHERE usuario_id=? AND categoria='Ventas' AND descripcion=? AND fecha=? AND tipo='ingreso' LIMIT 1`,
+      [req.user.id, descFinanza, fechaStr]
     );
+
+    await q(`DELETE FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
