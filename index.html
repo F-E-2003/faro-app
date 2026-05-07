@@ -206,14 +206,17 @@
         <!-- Métodos -->
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Método de pago</p>
         <div class="grid grid-cols-3 gap-3 mb-6" id="metodos-pago">
-          <button onclick="selectMetodo('Nequi')" id="btn-Nequi" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors">
-            <p class="text-2xl">💜</p><p class="text-xs font-bold mt-1">Nequi</p>
+          <button onclick="selectMetodo('Nequi')" id="btn-Nequi" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#7B2D8B] transition-colors flex flex-col items-center gap-1">
+            <img src="/logonequi.png" alt="Nequi" class="w-10 h-10 object-contain rounded-lg"/>
+            <p class="text-xs font-bold">Nequi</p>
           </button>
-          <button onclick="selectMetodo('Daviplata')" id="btn-Daviplata" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors">
-            <p class="text-2xl">🔴</p><p class="text-xs font-bold mt-1">Daviplata</p>
+          <button onclick="selectMetodo('Daviplata')" id="btn-Daviplata" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#E30613] transition-colors flex flex-col items-center gap-1">
+            <img src="/logodaviplata.png" alt="Daviplata" class="w-10 h-10 object-contain rounded-lg"/>
+            <p class="text-xs font-bold">Daviplata</p>
           </button>
-          <button onclick="selectMetodo('Llave')" id="btn-Llave" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors">
-            <p class="text-2xl">🔑</p><p class="text-xs font-bold mt-1">Llave</p>
+          <button onclick="selectMetodo('Llave')" id="btn-Llave" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors flex flex-col items-center gap-1">
+            <div class="w-10 h-10 bg-[#f0faf5] rounded-lg flex items-center justify-center text-2xl">🔑</div>
+            <p class="text-xs font-bold">Llave</p>
           </button>
         </div>
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Número / Referencia de pago</p>
