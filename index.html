@@ -83,6 +83,12 @@
   .view { display: none; }
   .view.active { display: block; }
   .nav-item { transition: all 0.2s; }
+  /* Responsive: sidebar oculto por defecto en mobile */
+  @media (max-width: 767px) {
+    #app-container { display: flex; flex-direction: column; }
+    aside { display: none !important; }
+    .view.active { padding-bottom: 5rem; }
+  }
   .nav-item.active {
     background: white; color: #006d43; border-radius: 9999px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
@@ -292,7 +298,7 @@
     <img src="/logofaro.png" alt="Faro" class="w-12 h-12 rounded-xl shadow"/>
     <div>
       <h1 class="font-headline font-black text-xl text-[#006d43]">Faro</h1>
-      <p class="text-xs font-medium text-slate-500 uppercase tracking-widest">Copiloto de Negocio</p>
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-widest" id="sidebar-subtitle">Copiloto de Negocio</p>
     </div>
   </div>
   <nav class="flex flex-col gap-1" id="sidebar-nav">
@@ -354,9 +360,13 @@
 
   <!-- TOP NAV -->
   <header class="bg-[#f4fbf3]/80 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(22,29,24,0.06)]">
-    <div class="flex justify-between items-center w-full px-8 py-4 max-w-screen-2xl mx-auto">
-      <div class="flex items-center gap-8">
-        <span class="md:hidden font-headline text-2xl font-black text-[#006d43] tracking-tighter">Faro</span>
+    <div class="flex justify-between items-center w-full px-4 sm:px-8 py-3 sm:py-4 max-w-screen-2xl mx-auto">
+      <div class="flex items-center gap-4 sm:gap-8">
+        <!-- Logo móvil -->
+        <div class="flex items-center gap-2 md:hidden">
+          <img src="/logofaro.png" alt="Faro" class="w-8 h-8 rounded-lg"/>
+          <span class="font-headline text-xl font-black text-[#006d43] tracking-tighter">Faro</span>
+        </div>
         <nav class="hidden md:flex items-center gap-6 text-sm font-bold tracking-tight font-headline" id="top-nav">
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="dashboard">Inicio</a>
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="finanzas">Finanzas</a>
@@ -365,12 +375,12 @@
           <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="metas">Metas</a>
         </nav>
       </div>
-      <div class="flex items-center gap-4">
-        <button onclick="toggleChat()" class="p-2 text-slate-500 hover:bg-surface-container rounded-full transition-colors" title="Mentor de Bolsillo">
+      <div class="flex items-center gap-2 sm:gap-4">
+        <button id="header-mentor-btn" onclick="toggleChat()" class="p-2 text-slate-500 hover:bg-surface-container rounded-full transition-colors hidden sm:flex" title="Mentor de Bolsillo">
           <span class="material-symbols-outlined">smart_toy</span>
         </button>
-        <div class="flex items-center gap-3 pl-4 border-l border-outline-variant/30">
-          <div class="w-10 h-10 editorial-gradient rounded-full flex items-center justify-center text-white font-bold text-sm" id="header-avatar">U</div>
+        <div class="flex items-center gap-2 sm:gap-3 sm:pl-4 sm:border-l border-outline-variant/30">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 editorial-gradient rounded-full flex items-center justify-center text-white font-bold text-sm" id="header-avatar">U</div>
           <div class="hidden md:block">
             <p class="text-sm font-bold text-on-surface leading-tight" id="header-user-name">Usuario</p>
             <button onclick="logout()" class="text-xs text-slate-400 hover:text-error transition-colors">Salir</button>
@@ -976,7 +986,7 @@
   </div><!-- /views-container -->
 
   <!-- FOOTER -->
-  <footer class="mt-20 py-12 px-8 bg-[#f4fbf3] border-t border-outline-variant/10">
+  <footer id="app-footer" class="mt-20 py-12 px-8 bg-[#f4fbf3] border-t border-outline-variant/10">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 items-start w-full">
       <div class="flex flex-col gap-4">
         <h2 class="font-headline font-black text-xl text-[#006d43]">Faro</h2>
@@ -999,7 +1009,7 @@
   </footer>
 
   <!-- MOBILE BOTTOM NAV -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-[#f4fbf3]/95 backdrop-blur-xl border-t border-outline-variant/20 z-50 flex justify-around py-2 px-2">
+  <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-[#f4fbf3]/95 backdrop-blur-xl border-t border-outline-variant/20 z-50 flex justify-around py-2 px-2">
     <button class="mobile-nav-btn flex flex-col items-center gap-0.5 p-2" data-view="dashboard">
       <span class="material-symbols-outlined text-slate-400 text-xl">dashboard</span>
       <span class="label text-[10px] text-slate-400 font-semibold">Inicio</span>
@@ -1021,7 +1031,7 @@
       <span class="label text-[10px] text-slate-400 font-semibold">Más</span>
     </button>
   </nav>
-  <div class="md:hidden h-20"></div>
+  <div id="mobile-nav-spacer" class="md:hidden h-20"></div>
 
 </main>
 </div><!-- /app-container -->
@@ -1159,27 +1169,28 @@
 ══════════════════════════════════════════ -->
     <div class="view fade-in" id="view-admin">
       <!-- Header verde -->
-      <div style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)" class="px-8 py-8 text-white">
-        <div class="max-w-5xl mx-auto flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(255,255,255,0.15)">
-              <span class="material-symbols-outlined text-3xl">admin_panel_settings</span>
+      <div style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)" class="px-5 sm:px-8 py-6 sm:py-8 text-white">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,0.15)">
+              <span class="material-symbols-outlined text-2xl sm:text-3xl">admin_panel_settings</span>
             </div>
-            <div>
-              <h2 class="text-2xl font-headline font-extrabold tracking-tight">Panel de Administración</h2>
-              <p class="text-white/70 text-sm mt-0.5">Faro · Gestión de usuarios y suscripciones</p>
+            <div class="min-w-0">
+              <h2 class="text-lg sm:text-2xl font-headline font-extrabold tracking-tight truncate">Panel de Administración</h2>
+              <p class="text-white/70 text-xs sm:text-sm mt-0.5 hidden sm:block">Faro · Gestión de usuarios y suscripciones</p>
             </div>
           </div>
-          <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
-            <span class="material-symbols-outlined text-sm">refresh</span> Actualizar
+          <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shrink-0 transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            <span class="hidden sm:inline">Actualizar</span>
           </button>
         </div>
       </div>
 
-      <div class="p-6 lg:p-8 max-w-5xl mx-auto w-full">
+      <div class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
 
         <!-- KPIs -->
-        <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
           <div class="bg-white rounded-2xl p-5 shadow-sm border border-green-100 flex items-center gap-4">
             <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[#006d43]">verified</span>
@@ -1222,11 +1233,12 @@
 
         <!-- Usuarios registrados -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+          <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center gap-3">
             <span class="material-symbols-outlined text-[#006d43]">group</span>
             <h3 class="font-bold text-base text-slate-700">Usuarios registrados</h3>
           </div>
-          <div class="overflow-x-auto">
+          <!-- Tabla desktop -->
+          <div class="hidden sm:block overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="bg-slate-50">
@@ -1234,13 +1246,17 @@
                   <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Negocio</th>
                   <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
                   <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Vence</th>
-                  <th class="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Acciones</th>
+                  <th class="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Acc.</th>
                 </tr>
               </thead>
               <tbody id="admin-tabla-body">
                 <tr><td colspan="5" class="text-center text-slate-400 py-10">Cargando...</td></tr>
               </tbody>
             </table>
+          </div>
+          <!-- Cards móvil -->
+          <div id="admin-tabla-mobile" class="sm:hidden divide-y divide-slate-100">
+            <p class="text-center text-slate-400 text-sm py-8">Cargando...</p>
           </div>
         </div>
 
@@ -1374,26 +1390,43 @@ function enterApp(user, diasRestantes) {
   document.getElementById('header-avatar').textContent = name.charAt(0).toUpperCase();
 
   if (user.es_admin) {
-    // Admin: ocultar todo nav de negocio, mostrar solo Admin Panel
+    // Admin: ocultar nav de negocio en sidebar
     document.querySelectorAll('#sidebar-nav .nav-item').forEach(el => {
-      if (el.id === 'sidebar-admin') {
-        el.classList.remove('hidden');
-      } else {
-        el.classList.add('hidden');
-      }
+      el.style.display = el.id === 'sidebar-admin' ? '' : 'none';
     });
-    // Ocultar separador y botón Mentor IA del sidebar
-    document.querySelectorAll('#sidebar-nav .h-px').forEach(el => el.classList.add('hidden'));
-    const mentorBtn = document.querySelector('.mt-auto button[onclick="toggleChat()"]');
-    if (mentorBtn) mentorBtn.classList.add('hidden');
-    // Ocultar top nav de negocio
+    document.querySelectorAll('#sidebar-nav .h-px').forEach(el => el.style.display = 'none');
+    // Cambiar subtítulo del sidebar
+    const sub = document.getElementById('sidebar-subtitle');
+    if (sub) sub.textContent = 'Administración';
+    // Ocultar botones de usuario normal en header
+    const mentorBtn = document.getElementById('header-mentor-btn');
+    if (mentorBtn) mentorBtn.style.display = 'none';
+    const sidebarMentorBtn = document.querySelector('.mt-auto button[onclick="toggleChat()"]');
+    if (sidebarMentorBtn) sidebarMentorBtn.style.display = 'none';
+    // CRÍTICO: usar style.display para override md:flex de Tailwind
     const topNav = document.getElementById('top-nav');
-    if (topNav) topNav.classList.add('hidden');
+    if (topNav) topNav.style.display = 'none';
+    // Ocultar nav móvil de negocio, reemplazar con botón admin
+    const mobileNav = document.getElementById('mobile-bottom-nav');
+    if (mobileNav) {
+      mobileNav.innerHTML = `
+        <button class="flex flex-col items-center gap-0.5 p-3 text-[#006d43]" onclick="navigate('admin');loadAdminPanel()">
+          <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
+          <span class="text-[10px] font-bold">Admin</span>
+        </button>
+        <button class="flex flex-col items-center gap-0.5 p-3 text-slate-400" onclick="logout()">
+          <span class="material-symbols-outlined text-xl">logout</span>
+          <span class="text-[10px] font-semibold">Salir</span>
+        </button>`;
+    }
+    // Ocultar footer para admin
+    const footer = document.getElementById('app-footer');
+    if (footer) footer.style.display = 'none';
     // Ir directo al admin panel
     navigate('admin');
     loadAdminPanel();
   } else {
-    // Usuario normal: asegurarse de que todo es visible y cargar datos
+    // Usuario normal: asegurarse de que todo es visible
     document.getElementById('sidebar-admin').classList.add('hidden');
     loadAllData();
     // Alerta día 29
@@ -1965,10 +1998,12 @@ async function loadAdminPanel() {
         </div>`).join('');
     }
 
-    // Tabla de usuarios
+    // Tabla de usuarios (desktop + mobile)
     const tbody = document.getElementById('admin-tabla-body');
+    const mobileList = document.getElementById('admin-tabla-mobile');
     if (!usuarios || !usuarios.length) {
       tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-10">Sin usuarios registrados</td></tr>';
+      if (mobileList) mobileList.innerHTML = '<p class="text-center text-slate-400 text-sm py-8">Sin usuarios registrados</p>';
     } else {
       const estadoBadge = e => ({
         sin_plan: '<span class="bg-slate-100 text-slate-500 text-xs font-bold px-2.5 py-1 rounded-full">Sin plan</span>',
@@ -1976,6 +2011,7 @@ async function loadAdminPanel() {
         activo:   '<span class="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">✓ Activo</span>',
         vencido:  '<span class="bg-red-100 text-red-500 text-xs font-bold px-2.5 py-1 rounded-full">Vencido</span>',
       }[e] || `<span class="text-xs text-slate-400">${e}</span>`);
+      // Desktop table rows
       tbody.innerHTML = usuarios.map(u => `
         <tr class="border-t border-slate-100 hover:bg-slate-50/60 transition-colors">
           <td class="px-6 py-4">
@@ -1998,6 +2034,23 @@ async function loadAdminPanel() {
             </button>
           </td>
         </tr>`).join('');
+      // Mobile cards
+      if (mobileList) mobileList.innerHTML = usuarios.map(u => `
+        <div class="flex items-center justify-between p-4 gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shrink-0" style="background:linear-gradient(135deg,#006d43,#00a86b)">
+              ${escHtml((u.nombre||'?').charAt(0).toUpperCase())}
+            </div>
+            <div class="min-w-0">
+              <p class="font-semibold text-sm text-slate-800 truncate">${escHtml(u.nombre)}</p>
+              <p class="text-xs text-slate-400 truncate">${escHtml(u.email)}</p>
+              <div class="mt-1">${estadoBadge(u.estado_suscripcion)}</div>
+            </div>
+          </div>
+          <button onclick="eliminarUsuario(${u.id},'${escJs(u.nombre)}')" class="text-red-400 hover:text-red-600 p-2 rounded-xl shrink-0">
+            <span class="material-symbols-outlined text-sm">delete</span>
+          </button>
+        </div>`).join('');
     }
   } catch (e) {
     console.error('Admin panel error:', e);
