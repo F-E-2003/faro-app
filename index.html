@@ -107,9 +107,9 @@
 ══════════════════════════════════════════ -->
 <div id="auth-overlay" class="fixed inset-0 z-[200] bg-gradient-to-br from-[#006d43] to-[#00a86b] flex items-center justify-center p-4">
   <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-10 flex flex-col gap-6">
-    <div class="text-center">
-      <h1 class="font-headline font-black text-3xl text-primary">Faro</h1>
-      <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Tu Copiloto de Negocio</p>
+    <div class="text-center flex flex-col items-center gap-2">
+      <img src="/logofaro.png" alt="Faro" class="w-24 h-24 rounded-[1.5rem] shadow-lg"/>
+      <p class="text-xs text-slate-400 uppercase tracking-widest">Tu Copiloto de Negocio</p>
     </div>
     <!-- Tabs -->
     <div class="flex border-b border-outline-variant/30">
@@ -142,9 +142,12 @@
 
 <!-- ── SIDEBAR ── -->
 <aside class="hidden md:flex flex-col h-screen w-72 rounded-r-[3rem] sticky left-0 top-0 bg-[#e9f0e8] py-10 gap-2 z-40">
-  <div class="px-10 mb-8">
-    <h1 class="font-headline font-black text-2xl text-[#006d43]">Faro</h1>
-    <p class="text-xs font-medium text-slate-500 mt-1 uppercase tracking-widest">Tu Copiloto de Negocio</p>
+  <div class="px-10 mb-8 flex items-center gap-3">
+    <img src="/logofaro.png" alt="Faro" class="w-12 h-12 rounded-xl shadow"/>
+    <div>
+      <h1 class="font-headline font-black text-xl text-[#006d43]">Faro</h1>
+      <p class="text-xs font-medium text-slate-500 uppercase tracking-widest">Copiloto de Negocio</p>
+    </div>
   </div>
   <nav class="flex flex-col gap-1" id="sidebar-nav">
     <a class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer" data-view="dashboard">
