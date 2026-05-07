@@ -1432,11 +1432,11 @@ function enterApp(user, diasRestantes) {
     // Cambiar subtítulo del sidebar
     const sub = document.getElementById('sidebar-subtitle');
     if (sub) sub.textContent = 'Administración';
-    // Mostrar tarjeta admin en sidebar, ocultar botones de usuario normal
-    const mentorBtn = document.getElementById('header-mentor-btn');
-    if (mentorBtn) mentorBtn.style.display = 'none';
-    const sidebarMentorBtn = document.getElementById('sidebar-mentor-btn');
-    if (sidebarMentorBtn) sidebarMentorBtn.style.display = 'none';
+    // Ocultar todo lo de Mentor IA (no tiene uso para el admin)
+    ['header-mentor-btn','sidebar-mentor-btn','chat-btn','chat-panel'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
     const sidebarLogout = document.getElementById('sidebar-logout-btn');
     if (sidebarLogout) sidebarLogout.style.display = 'none';
     // Mostrar contenido admin en sidebar
