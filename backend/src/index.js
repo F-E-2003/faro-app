@@ -48,6 +48,7 @@ function getTransporter() {
 }
 
 async function sendTokenEmail(email, nombre, token) {
+  // Retorna true si el correo se envió, false si fue simulado
   const html = `
     <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:16px">
       <h2 style="color:#006d43">🔑 Tu token de acceso a <strong>Faro</strong></h2>
@@ -68,15 +69,18 @@ async function sendTokenEmail(email, nombre, token) {
       await transporter.sendMail({
         from: `"Faro App" <${process.env.SMTP_USER}>`,
         to: email,
-        subject: `🔑 Tu token de acceso Faro: ${token}`,
+        subject: `Tu token de acceso Faro: ${token}`,
         html,
       });
       console.log(`✅ Token enviado por email a ${email}`);
+      return true;
     } catch (err) {
       console.warn(`⚠️ Email no enviado (${err.message}). Token: ${token}`);
+      return false;
     }
   } else {
     console.log(`📧 [SIMULADO] Token para ${email} (${nombre}): ${token}`);
+    return false;
   }
 }
 
@@ -464,9 +468,9 @@ app.post('/api/admin/generar-token/:id', adminAuth, async (req, res) => {
 
     const token = generarTokenAlfanum();
     await q(`UPDATE suscripciones SET token=?, token_enviado_en=NOW() WHERE id=?`, [token, sub.id]);
-    await sendTokenEmail(sub.email, sub.nombre, token);
+    const emailEnviado = await sendTokenEmail(sub.email, sub.nombre, token);
 
-    res.json({ ok: true, token });
+    res.json({ ok: true, token, email_enviado: emailEnviado, email_usuario: sub.email });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

@@ -2107,13 +2107,55 @@ async function loadAdminPanel() {
 }
 
 async function generarToken(subId) {
-  if (!confirm('¿Confirmas que el pago fue recibido y deseas generar el token de activación?')) return;
+  if (!confirm('¿Confirmas que el pago fue recibido?\n\nSe generará el token de activación de 30 días.')) return;
   try {
     const data = await apiFetch(`/admin/generar-token/${subId}`, { method: 'POST', body: JSON.stringify({}) });
     if (!data || data.error) throw new Error((data && data.error) || 'Error al generar token');
-    alert('✅ Token generado: ' + data.token + '\n\nFue enviado al correo del usuario.');
+    // Mostrar modal con token
+    mostrarModalToken(data.token, data.email_usuario, data.email_enviado);
     loadAdminPanel();
   } catch (e) { alert('Error: ' + e.message); }
+}
+
+function mostrarModalToken(token, emailUsuario, emailEnviado) {
+  // Crear modal overlay
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:1rem';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:1.5rem;padding:2rem;max-width:420px;width:100%;box-shadow:0 25px 50px rgba(0,0,0,0.25)">
+      <div style="text-align:center;margin-bottom:1.5rem">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#006d43,#00a86b);border-radius:1rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+          <span class="material-symbols-outlined" style="color:white;font-size:28px">key</span>
+        </div>
+        <h3 style="font-size:1.25rem;font-weight:900;color:#1a1a1a;margin:0 0 0.25rem">Token generado</h3>
+        <p style="font-size:0.8rem;color:#64748b;margin:0">Para: <strong>${escHtml(emailUsuario)}</strong></p>
+      </div>
+
+      <div style="background:#f0faf5;border:2px dashed #006d43;border-radius:1rem;padding:1.25rem;text-align:center;margin-bottom:1rem">
+        <p style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 0.5rem">Token de activación</p>
+        <p id="token-display" style="font-size:1.5rem;font-weight:900;letter-spacing:0.2em;color:#006d43;margin:0;font-family:monospace">${escHtml(token)}</p>
+      </div>
+
+      <button onclick="navigator.clipboard.writeText('${escJs(token)}').then(()=>{this.textContent='✓ Copiado!';setTimeout(()=>{this.textContent='Copiar token'},2000)})"
+        style="width:100%;background:linear-gradient(135deg,#006d43,#00a86b);color:white;border:none;border-radius:9999px;padding:0.75rem;font-weight:700;font-size:0.9rem;cursor:pointer;margin-bottom:0.75rem">
+        Copiar token
+      </button>
+
+      ${emailEnviado
+        ? `<p style="text-align:center;font-size:0.8rem;color:#006d43;font-weight:600">✅ Token enviado al correo del usuario</p>`
+        : `<div style="background:#fef3c7;border-radius:0.75rem;padding:0.75rem;margin-bottom:0.75rem">
+            <p style="font-size:0.8rem;color:#92400e;font-weight:600;margin:0 0 0.25rem">⚠️ Correo no configurado</p>
+            <p style="font-size:0.75rem;color:#92400e;margin:0">Copia el token y compártelo manualmente con el usuario.</p>
+           </div>`
+      }
+
+      <button onclick="this.closest('[style*=fixed]').remove()"
+        style="width:100%;background:#f1f5f9;color:#64748b;border:none;border-radius:9999px;padding:0.6rem;font-weight:600;font-size:0.85rem;cursor:pointer;margin-top:0.5rem">
+        Cerrar
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 async function eliminarUsuario(uid, nombre) {
