@@ -983,6 +983,96 @@
       </div>
     </div>
 
+    <!-- ── VISTA: ADMIN ── -->
+    <div class="view fade-in" id="view-admin">
+      <!-- Header verde -->
+      <div style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)" class="px-5 sm:px-8 py-6 sm:py-8 text-white">
+        <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,0.15)">
+              <span class="material-symbols-outlined text-2xl sm:text-3xl">admin_panel_settings</span>
+            </div>
+            <div class="min-w-0">
+              <h2 class="text-lg sm:text-2xl font-headline font-extrabold tracking-tight truncate">Panel de Administración</h2>
+              <p class="text-white/70 text-xs sm:text-sm mt-0.5 hidden sm:block">Faro · Gestión de usuarios y suscripciones</p>
+            </div>
+          </div>
+          <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shrink-0 transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            <span class="hidden sm:inline">Actualizar</span>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+        <!-- KPIs -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-green-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[#006d43]">verified</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Activas</p>
+              <p class="text-3xl font-headline font-black text-[#006d43]" id="admin-activas">—</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-amber-500">schedule</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pendientes</p>
+              <p class="text-3xl font-headline font-black text-amber-500" id="admin-pendientes-count">—</p>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-red-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-red-400">timer</span>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Por vencer</p>
+              <p class="text-3xl font-headline font-black text-red-400" id="admin-por-vencer-count">—</p>
+            </div>
+          </div>
+        </div>
+        <!-- Solicitudes pendientes -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6">
+          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-500">pending_actions</span>
+            <h3 class="font-bold text-base text-slate-700">Solicitudes pendientes de validación</h3>
+          </div>
+          <div id="admin-pendientes-lista" class="p-6">
+            <p class="text-slate-400 text-sm text-center py-4">Cargando...</p>
+          </div>
+        </div>
+        <!-- Usuarios registrados -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
+          <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+            <span class="material-symbols-outlined text-[#006d43]">group</span>
+            <h3 class="font-bold text-base text-slate-700">Usuarios registrados</h3>
+          </div>
+          <div class="hidden sm:block overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</th>
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Negocio</th>
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
+                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Vence</th>
+                  <th class="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Acc.</th>
+                </tr>
+              </thead>
+              <tbody id="admin-tabla-body">
+                <tr><td colspan="5" class="text-center text-slate-400 py-10">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="admin-tabla-mobile" class="sm:hidden divide-y divide-slate-100">
+            <p class="text-center text-slate-400 text-sm py-8">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /views-container -->
 
   <!-- FOOTER -->
@@ -1163,105 +1253,6 @@
     </button>
   </div>
 </div>
-
-<!-- ══════════════════════════════════════════
-     ADMIN VIEW
-══════════════════════════════════════════ -->
-    <div class="view fade-in" id="view-admin">
-      <!-- Header verde -->
-      <div style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)" class="px-5 sm:px-8 py-6 sm:py-8 text-white">
-        <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,0.15)">
-              <span class="material-symbols-outlined text-2xl sm:text-3xl">admin_panel_settings</span>
-            </div>
-            <div class="min-w-0">
-              <h2 class="text-lg sm:text-2xl font-headline font-extrabold tracking-tight truncate">Panel de Administración</h2>
-              <p class="text-white/70 text-xs sm:text-sm mt-0.5 hidden sm:block">Faro · Gestión de usuarios y suscripciones</p>
-            </div>
-          </div>
-          <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shrink-0 transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
-            <span class="material-symbols-outlined text-sm">refresh</span>
-            <span class="hidden sm:inline">Actualizar</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
-
-        <!-- KPIs -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
-          <div class="bg-white rounded-2xl p-5 shadow-sm border border-green-100 flex items-center gap-4">
-            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[#006d43]">verified</span>
-            </div>
-            <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Activas</p>
-              <p class="text-3xl font-headline font-black text-[#006d43]" id="admin-activas">—</p>
-            </div>
-          </div>
-          <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100 flex items-center gap-4">
-            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-amber-500">schedule</span>
-            </div>
-            <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pendientes</p>
-              <p class="text-3xl font-headline font-black text-amber-500" id="admin-pendientes-count">—</p>
-            </div>
-          </div>
-          <div class="bg-white rounded-2xl p-5 shadow-sm border border-red-100 flex items-center gap-4">
-            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-red-400">timer</span>
-            </div>
-            <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Por vencer</p>
-              <p class="text-3xl font-headline font-black text-red-400" id="admin-por-vencer-count">—</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Solicitudes pendientes -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-            <span class="material-symbols-outlined text-amber-500">pending_actions</span>
-            <h3 class="font-bold text-base text-slate-700">Solicitudes pendientes de validación</h3>
-          </div>
-          <div id="admin-pendientes-lista" class="p-6">
-            <p class="text-slate-400 text-sm text-center py-4">Cargando...</p>
-          </div>
-        </div>
-
-        <!-- Usuarios registrados -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-            <span class="material-symbols-outlined text-[#006d43]">group</span>
-            <h3 class="font-bold text-base text-slate-700">Usuarios registrados</h3>
-          </div>
-          <!-- Tabla desktop -->
-          <div class="hidden sm:block overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="bg-slate-50">
-                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</th>
-                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Negocio</th>
-                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</th>
-                  <th class="text-left px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Vence</th>
-                  <th class="px-6 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Acc.</th>
-                </tr>
-              </thead>
-              <tbody id="admin-tabla-body">
-                <tr><td colspan="5" class="text-center text-slate-400 py-10">Cargando...</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <!-- Cards móvil -->
-          <div id="admin-tabla-mobile" class="sm:hidden divide-y divide-slate-100">
-            <p class="text-center text-slate-400 text-sm py-8">Cargando...</p>
-          </div>
-        </div>
-
-      </div>
-    </div>
 
 <!-- ══════════════════════════════════════════
      JAVASCRIPT
