@@ -106,7 +106,7 @@
   @keyframes slideUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
 </style>
 </head>
-<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+<body class="bg-background text-on-surface font-body selection:bg-primary-fixed selection:text-on-primary-fixed" translate="no" lang="es">
 
 <!-- ══════════════════════════════════════════
      AUTH OVERLAY
@@ -2151,6 +2151,17 @@ document.getElementById('reg-password').addEventListener('keypress', e => {
 showAuthTab('login');
 navigate('dashboard');
 checkAuth();
+
+// ── Proteger íconos Material Symbols de Google Translate ──────────────────────
+function protectIcons() {
+  document.querySelectorAll('.material-symbols-outlined:not([translate])').forEach(el => {
+    el.setAttribute('translate', 'no');
+    el.classList.add('notranslate');
+  });
+}
+protectIcons();
+// También protege íconos generados dinámicamente (loadAdminPanel, etc.)
+new MutationObserver(protectIcons).observe(document.body, { childList: true, subtree: true });
 </script>
 </body>
 </html>
