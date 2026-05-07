@@ -35,7 +35,7 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim
 const PRECIO_PLAN  = 150000; // COP
 
 // ── EMAIL ─────────────────────────────────────────────────────────────────────
-// Usa SMTP (Mailjet) → si falla, simula en consola
+// Usa Mailjet HTTP API (HTTPS puerto 443, nunca bloqueado por firewalls)
 
 function buildEmailHtml(nombre, token) {
   return `
@@ -54,70 +54,57 @@ function buildEmailHtml(nombre, token) {
     </div>`;
 }
 
-// Envía vía Resend API (usa HTTPS, nunca bloqueado por firewalls)
-async function sendViaResend(to, subject, html) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return false;
-  const fromEmail = process.env.RESEND_FROM || 'onboarding@resend.dev';
-  const resp = await fetch('https://api.resend.com/emails', {
+// Envía email vía Mailjet HTTP API (usa HTTPS, no SMTP)
+async function sendEmail(to, toName, subject, html) {
+  const apiKey    = process.env.SMTP_USER;  // Mailjet API Key
+  const secretKey = process.env.SMTP_PASS;  // Mailjet Secret Key
+  const fromEmail = process.env.MAIL_FROM;  // Correo remitente verificado en Mailjet
+
+  if (!apiKey || !secretKey || !fromEmail) return false;
+
+  const auth = Buffer.from(`${apiKey}:${secretKey}`).toString('base64');
+  const resp = await fetch('https://api.mailjet.com/v3.1/send', {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: `Faro App <${fromEmail}>`, to, subject, html }),
+    headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      Messages: [{
+        From: { Email: fromEmail, Name: 'Faro App' },
+        To:   [{ Email: to, Name: toName || to }],
+        Subject: subject,
+        HTMLPart: html,
+      }]
+    }),
   });
   const data = await resp.json();
-  if (!resp.ok) throw new Error(data.message || `Resend error ${resp.status}`);
+  if (!resp.ok) {
+    const errMsg = data?.Messages?.[0]?.Errors?.[0]?.ErrorMessage || data?.ErrorMessage || `HTTP ${resp.status}`;
+    throw new Error(errMsg);
+  }
   return true;
 }
 
-// Envía vía SMTP (fallback, puede ser bloqueado en algunos hosts)
-function getTransporter() {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const port = parseInt(process.env.SMTP_PORT || '587');
-  if (!host || !user || !pass) return null;
-  const secure = port === 465;
-  return nodemailer.createTransport({
-    host, port, secure,
-    requireTLS: !secure,
-    auth: { user, pass },
-    tls: { rejectUnauthorized: false },
-    connectionTimeout: 10000,
-  });
-}
-
 async function testSMTP() {
-  const t = getTransporter();
-  if (!t) {
-    console.warn('⚠️  SMTP no configurado (SMTP_HOST, SMTP_USER, SMTP_PASS). Los tokens solo se mostrarán en pantalla.');
+  const apiKey    = process.env.SMTP_USER;
+  const secretKey = process.env.SMTP_PASS;
+  const fromEmail = process.env.MAIL_FROM;
+  if (!apiKey || !secretKey || !fromEmail) {
+    console.warn('⚠️  Email no configurado. Faltan SMTP_USER, SMTP_PASS o MAIL_FROM.');
     return;
   }
-  try {
-    await t.verify();
-    console.log(`✅ SMTP conectado (${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587})`);
-  } catch (err) {
-    console.error(`❌ SMTP ERROR al arrancar: ${err.message}`);
-  }
+  console.log(`✅ Email configurado — Mailjet API (from: ${fromEmail})`);
 }
 
 async function sendTokenEmail(email, nombre, token) {
-  const html = buildEmailHtml(nombre, token);
+  const html    = buildEmailHtml(nombre, token);
   const subject = `Tu token de acceso Faro: ${token}`;
-
-  const transporter = getTransporter();
-  if (transporter) {
-    try {
-      await transporter.sendMail({ from: `"Faro App" <${process.env.SMTP_USER}>`, to: email, subject, html });
-      console.log(`✅ Token enviado por SMTP a ${email}`);
-      return true;
-    } catch (err) {
-      console.warn(`⚠️ SMTP falló (${err.message}). Token: ${token}`);
-      return false;
-    }
+  try {
+    await sendEmail(email, nombre, subject, html);
+    console.log(`✅ Token enviado a ${email}`);
+    return true;
+  } catch (err) {
+    console.warn(`⚠️ Email falló (${err.message}). Token: ${token}`);
+    return false;
   }
-
-  console.log(`📧 [SIMULADO] Token para ${email}: ${token}`);
-  return false;
 }
 
 // ── DB POOL ───────────────────────────────────────────────────────────────────
@@ -480,33 +467,36 @@ app.post('/api/admin/test-email', adminAuth, async (req, res) => {
   const destino = email_destino || process.env.SMTP_USER || process.env.RESEND_FROM;
   if (!destino) return res.status(400).json({ error: 'Ingresa un correo de destino.' });
 
-  const html = `<div style="font-family:sans-serif;padding:24px;max-width:480px">
-    <h2 style="color:#006d43">✅ Email de prueba — Faro App</h2>
-    <p>Si ves este mensaje, el servidor de Faro está enviando emails correctamente vía Mailjet.</p>
-    <p style="color:#888;font-size:12px">Faro — Tu Copiloto de Negocio</p>
-  </div>`;
-  const subject = '✅ Prueba de email — Faro App';
+  const apiKey    = process.env.SMTP_USER;
+  const secretKey = process.env.SMTP_PASS;
+  const fromEmail = process.env.MAIL_FROM;
 
-  const t = getTransporter();
-  if (!t) {
+  if (!apiKey || !secretKey || !fromEmail) {
     return res.json({
       ok: false,
       diagnostico: {
-        SMTP_HOST: process.env.SMTP_HOST || '❌ NO DEFINIDA',
-        SMTP_PORT: process.env.SMTP_PORT || '587 (default)',
-        SMTP_USER: process.env.SMTP_USER || '❌ NO DEFINIDA',
-        SMTP_PASS: process.env.SMTP_PASS ? `✅ (${process.env.SMTP_PASS.length} chars)` : '❌ NO DEFINIDA',
+        SMTP_USER:  apiKey    ? `✅ (${apiKey.length} chars)`    : '❌ NO DEFINIDA',
+        SMTP_PASS:  secretKey ? `✅ (${secretKey.length} chars)` : '❌ NO DEFINIDA',
+        MAIL_FROM:  fromEmail || '❌ NO DEFINIDA — agrega esta variable',
       },
-      mensaje: 'SMTP no configurado. Verifica las variables SMTP_HOST, SMTP_USER y SMTP_PASS en Railway.'
+      mensaje: !fromEmail
+        ? 'Falta la variable MAIL_FROM. Agrégala en Railway con tu correo de Mailjet.'
+        : 'Faltan credenciales de Mailjet (SMTP_USER / SMTP_PASS).'
     });
   }
+
+  const html = `<div style="font-family:sans-serif;padding:24px;max-width:480px">
+    <h2 style="color:#006d43">✅ Email de prueba — Faro App</h2>
+    <p>Si ves este mensaje, el servidor está enviando emails correctamente vía Mailjet API.</p>
+    <p style="color:#888;font-size:12px">Faro — Tu Copiloto de Negocio</p>
+  </div>`;
   try {
-    await t.sendMail({ from: `"Faro App" <${process.env.SMTP_USER}>`, to: destino, subject, html });
+    await sendEmail(destino, destino, '✅ Prueba de email — Faro App', html);
     console.log(`✅ Test email enviado a ${destino}`);
     res.json({ ok: true, mensaje: `Email enviado a ${destino} ✅` });
   } catch (err) {
-    console.error(`❌ Test SMTP falló: ${err.message}`);
-    res.json({ ok: false, mensaje: `Error SMTP: ${err.message}` });
+    console.error(`❌ Test email falló: ${err.message}`);
+    res.json({ ok: false, mensaje: `Error Mailjet: ${err.message}` });
   }
 });
 
