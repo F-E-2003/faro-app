@@ -1273,12 +1273,12 @@ async function solicitarPago() {
   if (!_metodoSeleccionado) { errEl.textContent = 'Selecciona un método de pago'; return; }
   if (!ref) { errEl.textContent = 'Ingresa la referencia o número de pago'; return; }
   try {
-    const res = await apiFetch('/suscripcion/solicitar', 'POST', { metodo_pago: _metodoSeleccionado, referencia_pago: ref });
-    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
-    // Actualizar estado local
+    const data = await apiFetch('/suscripcion/solicitar', { method: 'POST', body: JSON.stringify({ metodo_pago: _metodoSeleccionado, referencia_pago: ref }) });
+    if (data && data.error) throw new Error(data.error);
     const user = JSON.parse(localStorage.getItem('faro_user') || '{}');
     user.estado_suscripcion = 'pendiente';
     localStorage.setItem('faro_user', JSON.stringify(user));
+    localStorage.setItem('faro_solicitud', JSON.stringify({ metodo_pago: _metodoSeleccionado, referencia_pago: ref }));
     document.getElementById('pend-metodo').textContent = _metodoSeleccionado;
     document.getElementById('pend-referencia').textContent = ref;
     showSubScreen('pendiente');
@@ -1286,19 +1286,17 @@ async function solicitarPago() {
 }
 
 async function activarToken() {
-  const token = document.getElementById('token-input').value.trim().toUpperCase();
+  const tkn = document.getElementById('token-input').value.trim().toUpperCase();
   const errEl = document.getElementById('token-error');
   errEl.textContent = '';
-  if (!token) { errEl.textContent = 'Ingresa el token recibido'; return; }
+  if (!tkn) { errEl.textContent = 'Ingresa el token recibido'; return; }
   try {
-    const res = await apiFetch('/suscripcion/activar', 'POST', { token });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
+    const data = await apiFetch('/suscripcion/activar', { method: 'POST', body: JSON.stringify({ token: tkn }) });
+    if (!data || data.error) throw new Error((data && data.error) || 'Token inválido');
     const user = JSON.parse(localStorage.getItem('faro_user') || '{}');
     user.estado_suscripcion = 'activo';
     localStorage.setItem('faro_user', JSON.stringify(user));
     localStorage.setItem('faro_dias_restantes', '30');
-    document.getElementById('sub-overlay').classList.add('hidden');
     enterApp(user, 30);
   } catch (e) { errEl.textContent = e.message; }
 }
@@ -1882,12 +1880,10 @@ function calcReinversion() {
 // ── Admin Panel ───────────────────────────────────────────────────────────────
 async function loadAdminPanel() {
   try {
-    const [resAlertas, resSubs] = await Promise.all([
+    const [alertas, subs] = await Promise.all([
       apiFetch('/admin/alertas'),
       apiFetch('/admin/suscripciones'),
     ]);
-    const alertas = await resAlertas.json();
-    const subs    = await resSubs.json();
 
     document.getElementById('admin-activas').textContent = alertas.activas ?? '—';
     document.getElementById('admin-pendientes-count').textContent = alertas.pendientes?.length ?? '0';
@@ -1941,10 +1937,9 @@ async function loadAdminPanel() {
 async function generarToken(subId) {
   if (!confirm('¿Confirmas que el pago fue recibido y deseas generar el token?')) return;
   try {
-    const res = await apiFetch(`/admin/generar-token/${subId}`, 'POST', {});
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    alert(`✅ Token generado: ${data.token}\n\nFue enviado al correo del usuario.`);
+    const data = await apiFetch(`/admin/generar-token/${subId}`, { method: 'POST', body: JSON.stringify({}) });
+    if (!data || data.error) throw new Error((data && data.error) || 'Error al generar token');
+    alert('✅ Token generado: ' + data.token + '\n\nFue enviado al correo del usuario.');
     loadAdminPanel();
   } catch (e) {
     alert('Error: ' + e.message);
