@@ -187,6 +187,19 @@ async function initDB() {
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
       )`);
 
+    // ── Auto-promover admins en cada arranque ──────────────────────────────────
+    if (ADMIN_EMAILS.length) {
+      for (const adminEmail of ADMIN_EMAILS) {
+        try {
+          await conn.query(
+            `UPDATE usuarios SET es_admin=1, estado_suscripcion='activo' WHERE LOWER(email)=?`,
+            [adminEmail]
+          );
+        } catch {}
+      }
+      console.log(`✅ Admins auto-promovidos: ${ADMIN_EMAILS.join(', ')}`);
+    }
+
     console.log(`✅ DB "${DB_NAME}" inicializada`);
   } catch (err) {
     console.error('❌ Error init DB:', err.message);
