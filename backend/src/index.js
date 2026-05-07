@@ -24,7 +24,11 @@ const STATIC_PATH = join(FRONTEND_PATH, '..');
 const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+// Servir archivos estáticos desde todas las ubicaciones posibles
 app.use(express.static(STATIC_PATH));
+app.use(express.static(process.cwd()));
+app.use(express.static(join(__dirname, '../../')));
+app.use(express.static(join(__dirname, '../')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'faro_copiloto_2026';
 const DB_NAME = process.env.DB_NAME || 'faro_negocio';
