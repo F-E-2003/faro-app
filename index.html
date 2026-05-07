@@ -136,6 +136,143 @@
 </div>
 
 <!-- ══════════════════════════════════════════
+     SUBSCRIPTION OVERLAY
+══════════════════════════════════════════ -->
+<div id="sub-overlay" class="hidden fixed inset-0 z-[150] overflow-y-auto" style="background-image:url('/fondofaro.png');background-size:cover;background-position:center;">
+  <div class="min-h-screen flex items-center justify-center p-4 py-10">
+
+    <!-- ── SCREEN: PLANES ── -->
+    <div id="sub-planes" class="hidden w-full max-w-2xl">
+      <div class="rounded-[2rem] shadow-2xl p-8 md:p-10" style="background:rgba(255,255,255,0.90);backdrop-filter:blur(20px);">
+        <div class="text-center mb-8">
+          <img src="/logofaro.png" alt="Faro" class="w-16 h-16 rounded-2xl shadow mx-auto mb-3"/>
+          <h1 class="font-headline font-black text-3xl text-[#006d43]">Activa tu Copiloto</h1>
+          <p class="text-slate-500 mt-1">Gestiona tu negocio con inteligencia — desde cualquier dispositivo</p>
+        </div>
+        <!-- Beneficios -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+          <div class="flex items-start gap-3 bg-[#f0faf5] rounded-2xl p-4">
+            <span class="material-symbols-outlined text-[#006d43] text-2xl">payments</span>
+            <div><p class="font-bold text-sm">Control Financiero</p><p class="text-xs text-slate-500">Ingresos, gastos y flujo de caja en tiempo real</p></div>
+          </div>
+          <div class="flex items-start gap-3 bg-[#f0faf5] rounded-2xl p-4">
+            <span class="material-symbols-outlined text-[#006d43] text-2xl">inventory_2</span>
+            <div><p class="font-bold text-sm">Inventario Visual</p><p class="text-xs text-slate-500">Alertas de stock bajo y gestión de productos</p></div>
+          </div>
+          <div class="flex items-start gap-3 bg-[#f0faf5] rounded-2xl p-4">
+            <span class="material-symbols-outlined text-[#006d43] text-2xl">psychology</span>
+            <div><p class="font-bold text-sm">Mentor de Bolsillo IA</p><p class="text-xs text-slate-500">Consejos personalizados según tus datos reales</p></div>
+          </div>
+          <div class="flex items-start gap-3 bg-[#f0faf5] rounded-2xl p-4">
+            <span class="material-symbols-outlined text-[#006d43] text-2xl">track_changes</span>
+            <div><p class="font-bold text-sm">Metas y Proyecciones</p><p class="text-xs text-slate-500">Define objetivos y proyecta tu crecimiento</p></div>
+          </div>
+          <div class="flex items-start gap-3 bg-[#f0faf5] rounded-2xl p-4">
+            <span class="material-symbols-outlined text-[#006d43] text-2xl">local_shipping</span>
+            <div><p class="font-bold text-sm">Gestión de Proveedores</p><p class="text-xs text-slate-500">Controla plazos y aliados estratégicos</p></div>
+          </div>
+          <div class="flex items-start gap-3 bg-[#f0faf5] rounded-2xl p-4">
+            <span class="material-symbols-outlined text-[#006d43] text-2xl">devices</span>
+            <div><p class="font-bold text-sm">Acceso desde cualquier lugar</p><p class="text-xs text-slate-500">Funciona en celular, tablet y computador</p></div>
+          </div>
+        </div>
+        <!-- Precio -->
+        <div class="bg-[#006d43] text-white rounded-2xl p-6 text-center mb-6">
+          <p class="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">Suscripción mensual</p>
+          <p class="font-headline font-black text-5xl">$150.000</p>
+          <p class="text-sm opacity-70 mt-1">COP · 30 días de acceso completo</p>
+        </div>
+        <button onclick="showSubScreen('pago')" class="w-full editorial-gradient text-white py-4 rounded-full font-bold text-base hover:opacity-90 transition-opacity shadow-lg">
+          Comenzar ahora →
+        </button>
+        <button onclick="logout()" class="w-full mt-3 text-slate-400 py-2 text-sm hover:text-slate-600">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN: PAGO ── -->
+    <div id="sub-pago" class="hidden w-full max-w-md">
+      <div class="rounded-[2rem] shadow-2xl p-8" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);">
+        <button onclick="showSubScreen('planes')" class="flex items-center gap-1 text-slate-400 text-sm mb-6 hover:text-slate-600">
+          <span class="material-symbols-outlined text-lg">arrow_back</span> Volver
+        </button>
+        <h2 class="font-headline font-black text-2xl text-[#006d43] mb-1">Realizar pago</h2>
+        <p class="text-slate-500 text-sm mb-6">Elige tu método y envía la referencia o número de transacción</p>
+        <!-- Métodos -->
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Método de pago</p>
+        <div class="grid grid-cols-3 gap-3 mb-6" id="metodos-pago">
+          <button onclick="selectMetodo('Nequi')" id="btn-Nequi" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors">
+            <p class="text-2xl">💜</p><p class="text-xs font-bold mt-1">Nequi</p>
+          </button>
+          <button onclick="selectMetodo('Daviplata')" id="btn-Daviplata" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors">
+            <p class="text-2xl">🔴</p><p class="text-xs font-bold mt-1">Daviplata</p>
+          </button>
+          <button onclick="selectMetodo('Llave')" id="btn-Llave" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors">
+            <p class="text-2xl">🔑</p><p class="text-xs font-bold mt-1">Llave</p>
+          </button>
+        </div>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Número / Referencia de pago</p>
+        <input id="pago-referencia" type="text" placeholder="Ej: 3214567890 o #REF123456"
+          class="w-full bg-surface-container-low rounded-xl px-4 py-3 text-sm border-2 border-outline-variant focus:border-primary outline-none mb-2"/>
+        <p class="text-xs text-slate-400 mb-6">Envía $150.000 COP al número de tu método y pega aquí la referencia o comprobante.</p>
+        <p id="pago-error" class="text-error text-xs min-h-[1rem] mb-2"></p>
+        <button onclick="solicitarPago()" class="w-full editorial-gradient text-white py-3 rounded-full font-bold hover:opacity-90 transition-opacity">
+          Enviar solicitud de pago
+        </button>
+        <button onclick="logout()" class="w-full mt-3 text-slate-400 py-2 text-sm hover:text-slate-600">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN: PENDIENTE / ACTIVAR TOKEN ── -->
+    <div id="sub-pendiente" class="hidden w-full max-w-md">
+      <div class="rounded-[2rem] shadow-2xl p-8 text-center" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);">
+        <span class="material-symbols-outlined text-5xl text-amber-500 mb-2">pending</span>
+        <h2 class="font-headline font-black text-2xl text-[#006d43] mb-2">Pago en revisión</h2>
+        <p class="text-slate-500 text-sm mb-6">Tu solicitud fue enviada. Un administrador verificará el pago y te enviará un <strong>token de activación</strong> por correo electrónico.</p>
+        <div class="bg-[#f0faf5] rounded-2xl p-4 mb-6 text-left">
+          <p class="text-xs font-bold text-slate-400 uppercase mb-2">Tu solicitud</p>
+          <p class="text-sm"><span class="font-bold">Método:</span> <span id="pend-metodo">—</span></p>
+          <p class="text-sm"><span class="font-bold">Referencia:</span> <span id="pend-referencia">—</span></p>
+        </div>
+        <div class="border-t border-outline-variant/30 pt-6">
+          <p class="text-sm font-bold text-slate-600 mb-3">¿Ya recibiste tu token?</p>
+          <input id="token-input" type="text" placeholder="Ej: FARO-AB3K7-MN9QX"
+            class="w-full bg-surface-container-low rounded-xl px-4 py-3 text-sm border-2 border-outline-variant focus:border-primary outline-none mb-2 uppercase tracking-widest text-center font-mono"/>
+          <p id="token-error" class="text-error text-xs min-h-[1rem] mb-2"></p>
+          <button onclick="activarToken()" class="w-full editorial-gradient text-white py-3 rounded-full font-bold hover:opacity-90 transition-opacity">
+            Activar suscripción
+          </button>
+        </div>
+        <button onclick="logout()" class="w-full mt-4 text-slate-400 py-2 text-sm hover:text-slate-600">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <!-- ── SCREEN: VENCIDO ── -->
+    <div id="sub-vencido" class="hidden w-full max-w-md">
+      <div class="rounded-[2rem] shadow-2xl p-8 text-center" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);">
+        <span class="material-symbols-outlined text-5xl text-red-400 mb-2">lock</span>
+        <h2 class="font-headline font-black text-2xl text-slate-700 mb-2">Suscripción vencida</h2>
+        <p class="text-slate-500 text-sm mb-6">Tu período de 30 días finalizó. Renueva para continuar usando Faro.</p>
+        <button onclick="showSubScreen('pago')" class="w-full editorial-gradient text-white py-3 rounded-full font-bold hover:opacity-90 transition-opacity mb-3">
+          Renovar suscripción ($150.000 COP)
+        </button>
+        <button onclick="logout()" class="w-full text-slate-400 py-2 text-sm hover:text-slate-600">Cerrar sesión</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── MODAL: RENOVAR (Día 29) ── -->
+<div id="modal-renovar" class="hidden fixed inset-0 z-[180] bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl">
+    <span class="material-symbols-outlined text-5xl text-amber-500">warning</span>
+    <h2 class="font-headline font-black text-xl mt-2">¡Suscripción vence mañana!</h2>
+    <p class="text-sm text-slate-500 mt-2 mb-6">Realiza tu pago hoy para no perder el acceso a Faro.</p>
+    <button onclick="document.getElementById('modal-renovar').classList.add('hidden')" class="w-full editorial-gradient text-white py-3 rounded-full font-bold">Entendido, renovaré hoy</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      APP CONTAINER
 ══════════════════════════════════════════ -->
 <div id="app-container" class="hidden flex min-h-screen">
@@ -186,6 +323,11 @@
     <a class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer" data-view="comunidad">
       <span class="material-symbols-outlined">groups</span>
       <span class="font-semibold text-sm">Comunidad</span>
+    </a>
+    <!-- Admin only -->
+    <a id="sidebar-admin" class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer hidden" data-view="admin">
+      <span class="material-symbols-outlined">admin_panel_settings</span>
+      <span class="font-semibold text-sm">Admin Panel</span>
     </a>
   </nav>
   <div class="mt-auto px-6 flex flex-col gap-3">
@@ -1004,6 +1146,80 @@
 </div>
 
 <!-- ══════════════════════════════════════════
+     ADMIN VIEW
+══════════════════════════════════════════ -->
+    <div class="view fade-in" id="view-admin">
+      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-3xl font-headline font-extrabold">Panel de Administración</h2>
+            <p class="text-slate-500 mt-1">Gestión de suscripciones y tokens</p>
+          </div>
+          <button onclick="loadAdminPanel()" class="editorial-gradient text-white px-6 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">refresh</span> Actualizar
+          </button>
+        </div>
+
+        <!-- KPIs Admin -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" id="admin-kpis">
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
+            <p class="text-xs font-bold text-slate-400 uppercase">Suscripciones activas</p>
+            <p class="text-4xl font-headline font-black text-[#006d43] mt-1" id="admin-activas">—</p>
+          </div>
+          <div class="bg-amber-50 rounded-2xl p-6 shadow-sm">
+            <p class="text-xs font-bold text-amber-500 uppercase">Pagos pendientes</p>
+            <p class="text-4xl font-headline font-black text-amber-600 mt-1" id="admin-pendientes-count">—</p>
+          </div>
+          <div class="bg-red-50 rounded-2xl p-6 shadow-sm">
+            <p class="text-xs font-bold text-red-400 uppercase">Por vencer (5 días)</p>
+            <p class="text-4xl font-headline font-black text-red-500 mt-1" id="admin-por-vencer-count">—</p>
+          </div>
+        </div>
+
+        <!-- Solicitudes pendientes -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm mb-6">
+          <div class="p-6 border-b border-outline-variant/20">
+            <h3 class="font-bold text-lg flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-500">pending_actions</span>
+              Solicitudes pendientes de validación
+            </h3>
+          </div>
+          <div id="admin-pendientes-lista" class="p-6">
+            <p class="text-slate-400 text-sm text-center py-4">Cargando...</p>
+          </div>
+        </div>
+
+        <!-- Todas las suscripciones -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm">
+          <div class="p-6 border-b border-outline-variant/20">
+            <h3 class="font-bold text-lg flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#006d43]">manage_accounts</span>
+              Historial completo
+            </h3>
+          </div>
+          <div id="admin-todas-lista" class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-surface-container">
+                <tr>
+                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Usuario</th>
+                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Método</th>
+                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Referencia</th>
+                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Estado</th>
+                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Token</th>
+                  <th class="text-left p-4 text-xs font-bold text-slate-400 uppercase">Vence</th>
+                  <th class="p-4"></th>
+                </tr>
+              </thead>
+              <tbody id="admin-tabla-body">
+                <tr><td colspan="7" class="text-center text-slate-400 py-8">Cargando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<!-- ══════════════════════════════════════════
      JAVASCRIPT
 ══════════════════════════════════════════ -->
 <script>
@@ -1023,24 +1239,125 @@ function showAuthTab(tab) {
   document.getElementById('tab-register').classList.toggle('text-slate-400', tab !== 'register');
 }
 
+// ── Subscription flow ─────────────────────────────────────────────────────────
+let _metodoSeleccionado = '';
+
+function showSubScreen(id) {
+  ['sub-planes','sub-pago','sub-pendiente','sub-vencido'].forEach(s =>
+    document.getElementById(s).classList.add('hidden'));
+  document.getElementById('sub-' + id).classList.remove('hidden');
+  document.getElementById('sub-overlay').classList.remove('hidden');
+  document.getElementById('app-container').classList.add('hidden');
+  document.getElementById('auth-overlay').classList.add('hidden');
+}
+
+function hideSubOverlay() {
+  document.getElementById('sub-overlay').classList.add('hidden');
+  document.getElementById('app-container').classList.remove('hidden');
+}
+
+function selectMetodo(m) {
+  _metodoSeleccionado = m;
+  ['Nequi','Daviplata','Llave'].forEach(x => {
+    const btn = document.getElementById('btn-' + x);
+    btn.classList.toggle('border-[#006d43]', x === m);
+    btn.classList.toggle('bg-[#f0faf5]', x === m);
+    btn.classList.toggle('border-outline-variant', x !== m);
+  });
+}
+
+async function solicitarPago() {
+  const ref = document.getElementById('pago-referencia').value.trim();
+  const errEl = document.getElementById('pago-error');
+  errEl.textContent = '';
+  if (!_metodoSeleccionado) { errEl.textContent = 'Selecciona un método de pago'; return; }
+  if (!ref) { errEl.textContent = 'Ingresa la referencia o número de pago'; return; }
+  try {
+    const res = await apiFetch('/suscripcion/solicitar', 'POST', { metodo_pago: _metodoSeleccionado, referencia_pago: ref });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+    // Actualizar estado local
+    const user = JSON.parse(localStorage.getItem('faro_user') || '{}');
+    user.estado_suscripcion = 'pendiente';
+    localStorage.setItem('faro_user', JSON.stringify(user));
+    document.getElementById('pend-metodo').textContent = _metodoSeleccionado;
+    document.getElementById('pend-referencia').textContent = ref;
+    showSubScreen('pendiente');
+  } catch (e) { errEl.textContent = e.message; }
+}
+
+async function activarToken() {
+  const token = document.getElementById('token-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('token-error');
+  errEl.textContent = '';
+  if (!token) { errEl.textContent = 'Ingresa el token recibido'; return; }
+  try {
+    const res = await apiFetch('/suscripcion/activar', 'POST', { token });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    const user = JSON.parse(localStorage.getItem('faro_user') || '{}');
+    user.estado_suscripcion = 'activo';
+    localStorage.setItem('faro_user', JSON.stringify(user));
+    localStorage.setItem('faro_dias_restantes', '30');
+    document.getElementById('sub-overlay').classList.add('hidden');
+    enterApp(user, 30);
+  } catch (e) { errEl.textContent = e.message; }
+}
+
 // ── Check auth ──
 function checkAuth() {
   const token = localStorage.getItem('faro_token');
   const user = JSON.parse(localStorage.getItem('faro_user') || 'null');
   const overlay = document.getElementById('auth-overlay');
   const app = document.getElementById('app-container');
+
   if (!token || !user) {
     overlay.classList.remove('hidden');
     app.classList.add('hidden');
-  } else {
-    overlay.classList.add('hidden');
-    app.classList.remove('hidden');
-    const name = user.nombre || user.email || 'Empresario';
-    document.getElementById('dashboard-name').textContent = name;
-    document.getElementById('header-user-name').textContent = name;
-    document.getElementById('header-avatar').textContent = name.charAt(0).toUpperCase();
-    loadAllData();
+    document.getElementById('sub-overlay').classList.add('hidden');
+    return;
   }
+
+  overlay.classList.add('hidden');
+  const estado = user.estado_suscripcion || 'sin_plan';
+  const diasRestantes = parseInt(localStorage.getItem('faro_dias_restantes') || '30');
+
+  if (user.es_admin || estado === 'activo') {
+    enterApp(user, user.es_admin ? null : diasRestantes);
+  } else if (estado === 'pendiente') {
+    const sub = JSON.parse(localStorage.getItem('faro_solicitud') || 'null');
+    if (sub) {
+      document.getElementById('pend-metodo').textContent = sub.metodo_pago || '—';
+      document.getElementById('pend-referencia').textContent = sub.referencia_pago || '—';
+    }
+    showSubScreen('pendiente');
+  } else if (estado === 'vencido') {
+    showSubScreen('vencido');
+  } else {
+    showSubScreen('planes');
+  }
+}
+
+function enterApp(user, diasRestantes) {
+  document.getElementById('sub-overlay').classList.add('hidden');
+  document.getElementById('auth-overlay').classList.add('hidden');
+  document.getElementById('app-container').classList.remove('hidden');
+
+  const name = user.nombre || user.email || 'Empresario';
+  document.getElementById('dashboard-name').textContent = name;
+  document.getElementById('header-user-name').textContent = name;
+  document.getElementById('header-avatar').textContent = name.charAt(0).toUpperCase();
+
+  // Mostrar Admin en sidebar si es admin
+  const adminLink = document.getElementById('sidebar-admin');
+  if (user.es_admin) adminLink.classList.remove('hidden');
+  else adminLink.classList.add('hidden');
+
+  // Alerta día 29
+  if (diasRestantes !== null && diasRestantes <= 1 && diasRestantes >= 0) {
+    document.getElementById('modal-renovar').classList.remove('hidden');
+  }
+
+  loadAllData();
 }
 
 async function doLogin() {
@@ -1058,6 +1375,7 @@ async function doLogin() {
     if (!res.ok) throw new Error(data.error || 'Credenciales incorrectas');
     localStorage.setItem('faro_token', data.token);
     localStorage.setItem('faro_user', JSON.stringify(data.usuario));
+    if (data.dias_restantes !== null) localStorage.setItem('faro_dias_restantes', String(data.dias_restantes));
     checkAuth();
   } catch (e) { errEl.textContent = e.message; }
 }
@@ -1528,6 +1846,7 @@ function navigate(viewId) {
   document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
   const ma = document.querySelector(`.mobile-nav-btn[data-view="${viewId}"]`);
   if (ma) ma.classList.add('active');
+  if (viewId === 'admin') loadAdminPanel();
 }
 
 // ── Calculadoras ──
@@ -1558,6 +1877,78 @@ function calcReinversion() {
   const reinv = (ganancia * 0.3).toFixed(2), opera = (ganancia * 0.7).toFixed(2);
   result.textContent = `Reinvertir: $${reinv} · Operar: $${opera}`;
   result.classList.remove('hidden');
+}
+
+// ── Admin Panel ───────────────────────────────────────────────────────────────
+async function loadAdminPanel() {
+  try {
+    const [resAlertas, resSubs] = await Promise.all([
+      apiFetch('/admin/alertas'),
+      apiFetch('/admin/suscripciones'),
+    ]);
+    const alertas = await resAlertas.json();
+    const subs    = await resSubs.json();
+
+    document.getElementById('admin-activas').textContent = alertas.activas ?? '—';
+    document.getElementById('admin-pendientes-count').textContent = alertas.pendientes?.length ?? '0';
+    document.getElementById('admin-por-vencer-count').textContent = alertas.por_vencer?.length ?? '0';
+
+    // Pendientes
+    const listaEl = document.getElementById('admin-pendientes-lista');
+    if (!alertas.pendientes?.length) {
+      listaEl.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">No hay solicitudes pendientes</p>';
+    } else {
+      listaEl.innerHTML = alertas.pendientes.map(p => `
+        <div class="border border-outline-variant/30 rounded-2xl p-4 mb-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p class="font-bold">${escHtml(p.nombre)} <span class="text-xs font-normal text-slate-400">(${escHtml(p.email)})</span></p>
+            <p class="text-sm text-slate-500">${escHtml(p.nombre_negocio || '—')}</p>
+            <p class="text-sm mt-1"><span class="font-semibold">${escHtml(p.metodo_pago)}</span> · Ref: <span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${escHtml(p.referencia_pago)}</span></p>
+            <p class="text-xs text-slate-400 mt-1">Solicitado: ${new Date(p.created_at).toLocaleString('es-CO')}</p>
+          </div>
+          <button onclick="generarToken(${p.id})" class="shrink-0 editorial-gradient text-white px-6 py-2 rounded-full text-sm font-bold hover:opacity-90 transition-opacity flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">key</span> Generar Token
+          </button>
+        </div>`).join('');
+    }
+
+    // Tabla completa
+    const tbody = document.getElementById('admin-tabla-body');
+    if (!subs.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">Sin registros</td></tr>';
+    } else {
+      const estadoBadge = e => ({
+        pendiente: '<span class="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">Pendiente</span>',
+        activo:    '<span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">Activo</span>',
+        vencido:   '<span class="bg-red-100 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full">Vencido</span>',
+      }[e] || e);
+      tbody.innerHTML = subs.map(s => `
+        <tr class="border-t border-outline-variant/10 hover:bg-surface-container/50">
+          <td class="p-4"><p class="font-semibold text-sm">${escHtml(s.nombre)}</p><p class="text-xs text-slate-400">${escHtml(s.email)}</p></td>
+          <td class="p-4 text-sm">${escHtml(s.metodo_pago||'—')}</td>
+          <td class="p-4"><span class="font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">${escHtml((s.referencia_pago||'').substring(0,30))}</span></td>
+          <td class="p-4">${estadoBadge(s.estado)}</td>
+          <td class="p-4"><span class="font-mono text-xs ${s.token ? 'text-[#006d43] font-bold' : 'text-slate-300'}">${escHtml(s.token||'—')}</span></td>
+          <td class="p-4 text-xs text-slate-500">${s.fecha_fin ? new Date(s.fecha_fin).toLocaleDateString('es-CO') : '—'}</td>
+          <td class="p-4">${s.estado==='pendiente' ? `<button onclick="generarToken(${s.id})" class="editorial-gradient text-white px-3 py-1 rounded-full text-xs font-bold">Generar Token</button>` : ''}</td>
+        </tr>`).join('');
+    }
+  } catch (e) {
+    console.error('Admin panel error:', e);
+  }
+}
+
+async function generarToken(subId) {
+  if (!confirm('¿Confirmas que el pago fue recibido y deseas generar el token?')) return;
+  try {
+    const res = await apiFetch(`/admin/generar-token/${subId}`, 'POST', {});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    alert(`✅ Token generado: ${data.token}\n\nFue enviado al correo del usuario.`);
+    loadAdminPanel();
+  } catch (e) {
+    alert('Error: ' + e.message);
+  }
 }
 
 // ── Utils ──

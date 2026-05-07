@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
@@ -12,11 +13,10 @@ dotenv.config();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Busca index.html en varias ubicaciones posibles según el entorno
 const FRONTEND_PATH = [
-  join(__dirname, '../../index.html'),   // local: Faro/backend/src → Faro/
-  join(__dirname, '../index.html'),      // Railway root = backend/
-  join(process.cwd(), 'index.html'),     // Railway cwd
+  join(__dirname, '../../index.html'),
+  join(__dirname, '../index.html'),
+  join(process.cwd(), 'index.html'),
 ].find(existsSync) ?? join(__dirname, '../../index.html');
 
 const STATIC_PATH = join(FRONTEND_PATH, '..');
@@ -24,14 +24,61 @@ const STATIC_PATH = join(FRONTEND_PATH, '..');
 const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
-// Servir archivos estáticos desde todas las ubicaciones posibles
 app.use(express.static(STATIC_PATH));
 app.use(express.static(process.cwd()));
 app.use(express.static(join(__dirname, '../../')));
 app.use(express.static(join(__dirname, '../')));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'faro_copiloto_2026';
-const DB_NAME = process.env.DB_NAME || 'faro_negocio';
+const JWT_SECRET   = process.env.JWT_SECRET   || 'faro_copiloto_2026';
+const DB_NAME      = process.env.DB_NAME      || 'faro_negocio';
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+const PRECIO_PLAN  = 150000; // COP
+
+// ── EMAIL ─────────────────────────────────────────────────────────────────────
+function getTransporter() {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    });
+  }
+  return null;
+}
+
+async function sendTokenEmail(email, nombre, token) {
+  const html = `
+    <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:24px;border:1px solid #e0e0e0;border-radius:16px">
+      <h2 style="color:#006d43">🔑 Tu token de acceso a <strong>Faro</strong></h2>
+      <p>Hola <strong>${nombre}</strong>,</p>
+      <p>Tu pago fue verificado. Usa este token para activar tu suscripción:</p>
+      <div style="background:#f0faf5;border:2px dashed #006d43;border-radius:12px;padding:20px;text-align:center;margin:20px 0">
+        <span style="font-size:28px;font-weight:900;letter-spacing:4px;color:#006d43">${token}</span>
+      </div>
+      <p style="font-size:13px;color:#666">• Válido por <strong>30 días</strong> a partir de su activación.<br>
+      • Ingrésalo en la pantalla de activación de Faro.<br>
+      • No lo compartas con nadie.</p>
+      <hr style="margin:20px 0;border:none;border-top:1px solid #eee"/>
+      <p style="font-size:12px;color:#aaa">Faro — Tu Copiloto de Negocio</p>
+    </div>`;
+  const transporter = getTransporter();
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: `"Faro App" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: `🔑 Tu token de acceso Faro: ${token}`,
+        html,
+      });
+      console.log(`✅ Token enviado por email a ${email}`);
+    } catch (err) {
+      console.warn(`⚠️ Email no enviado (${err.message}). Token: ${token}`);
+    }
+  } else {
+    console.log(`📧 [SIMULADO] Token para ${email} (${nombre}): ${token}`);
+  }
+}
 
 // ── DB POOL ───────────────────────────────────────────────────────────────────
 const pool = mysql.createPool({
@@ -50,6 +97,7 @@ async function initDB() {
     await conn.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\``);
     await conn.query(`USE \`${DB_NAME}\``);
 
+    // ── Tablas base ────────────────────────────────────────────────────────────
     await conn.query(`
       CREATE TABLE IF NOT EXISTS usuarios (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -57,9 +105,34 @@ async function initDB() {
         email VARCHAR(100) UNIQUE NOT NULL,
         password_hash VARCHAR(255) NOT NULL,
         nombre_negocio VARCHAR(150) DEFAULT '',
+        es_admin TINYINT(1) DEFAULT 0,
+        estado_suscripcion VARCHAR(20) DEFAULT 'sin_plan',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+      )`);
+
+    // Añadir columnas si no existen (migraciones seguras)
+    for (const col of [
+      `ADD COLUMN es_admin TINYINT(1) DEFAULT 0`,
+      `ADD COLUMN estado_suscripcion VARCHAR(20) DEFAULT 'sin_plan'`,
+    ]) {
+      try { await conn.query(`ALTER TABLE usuarios ${col}`); } catch {}
+    }
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS suscripciones (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        estado VARCHAR(20) DEFAULT 'pendiente',
+        metodo_pago VARCHAR(50) DEFAULT '',
+        referencia_pago TEXT DEFAULT '',
+        token VARCHAR(25) DEFAULT NULL,
+        token_enviado_en DATETIME DEFAULT NULL,
+        fecha_inicio DATETIME DEFAULT NULL,
+        fecha_fin DATETIME DEFAULT NULL,
+        monto DECIMAL(10,2) DEFAULT 150000,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+      )`);
 
     await conn.query(`
       CREATE TABLE IF NOT EXISTS finanzas (
@@ -72,8 +145,7 @@ async function initDB() {
         fecha DATE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-      )
-    `);
+      )`);
 
     await conn.query(`
       CREATE TABLE IF NOT EXISTS productos (
@@ -87,8 +159,7 @@ async function initDB() {
         stock_minimo INT NOT NULL DEFAULT 5,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-      )
-    `);
+      )`);
 
     await conn.query(`
       CREATE TABLE IF NOT EXISTS proveedores (
@@ -101,8 +172,7 @@ async function initDB() {
         plazo_entrega_dias INT DEFAULT 3,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-      )
-    `);
+      )`);
 
     await conn.query(`
       CREATE TABLE IF NOT EXISTS metas (
@@ -115,10 +185,9 @@ async function initDB() {
         fecha_limite DATE DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-      )
-    `);
+      )`);
 
-    console.log(`✅ DB "${DB_NAME}" inicializada correctamente`);
+    console.log(`✅ DB "${DB_NAME}" inicializada`);
   } catch (err) {
     console.error('❌ Error init DB:', err.message);
     throw err;
@@ -127,19 +196,7 @@ async function initDB() {
   }
 }
 
-// ── AUTH MIDDLEWARE ───────────────────────────────────────────────────────────
-const auth = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'No autorizado' });
-  try {
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  } catch {
-    res.status(401).json({ error: 'Token inválido o expirado' });
-  }
-};
-
-// helper para pool con DB seleccionada
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 async function q(sql, params = []) {
   const conn = await pool.getConnection();
   try {
@@ -151,22 +208,79 @@ async function q(sql, params = []) {
   }
 }
 
+function generarTokenAlfanum() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let t = 'FARO-';
+  for (let i = 0; i < 5; i++) t += chars[Math.floor(Math.random() * chars.length)];
+  t += '-';
+  for (let i = 0; i < 5; i++) t += chars[Math.floor(Math.random() * chars.length)];
+  return t; // Ej: FARO-AB3K7-MN9QX
+}
+
+async function calcDiasRestantes(usuarioId) {
+  const subs = await q(
+    `SELECT fecha_fin FROM suscripciones WHERE usuario_id=? AND estado='activo' ORDER BY fecha_fin DESC LIMIT 1`,
+    [usuarioId]);
+  if (!subs.length) return null;
+  return Math.ceil((new Date(subs[0].fecha_fin) - new Date()) / 86400000);
+}
+
+async function autoExpirar(usuarioId) {
+  const subs = await q(
+    `SELECT id FROM suscripciones WHERE usuario_id=? AND estado='activo' AND fecha_fin < NOW()`,
+    [usuarioId]);
+  if (subs.length) {
+    await q(`UPDATE suscripciones SET estado='vencido' WHERE usuario_id=? AND estado='activo'`, [usuarioId]);
+    await q(`UPDATE usuarios SET estado_suscripcion='vencido' WHERE id=?`, [usuarioId]);
+    return true;
+  }
+  return false;
+}
+
+// ── AUTH MIDDLEWARE ───────────────────────────────────────────────────────────
+const auth = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No autorizado' });
+  try { req.user = jwt.verify(token, JWT_SECRET); next(); }
+  catch { res.status(401).json({ error: 'Token inválido o expirado' }); }
+};
+
+const adminAuth = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No autorizado' });
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (!payload.es_admin) return res.status(403).json({ error: 'Acceso denegado' });
+    req.user = payload;
+    next();
+  } catch { res.status(401).json({ error: 'Token inválido' }); }
+};
+
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 app.post('/api/auth/register', async (req, res) => {
   const { nombre, email, password, nombre_negocio } = req.body;
   if (!nombre || !email || !password)
     return res.status(400).json({ error: 'Nombre, email y contraseña son requeridos' });
   if (password.length < 6)
-    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+    return res.status(400).json({ error: 'La contraseña debe tener mínimo 6 caracteres' });
   try {
+    const emailLow = email.trim().toLowerCase();
+    const esAdmin = ADMIN_EMAILS.includes(emailLow) ? 1 : 0;
     const hash = await bcrypt.hash(password, 10);
     const result = await q(
-      'INSERT INTO usuarios (nombre, email, password_hash, nombre_negocio) VALUES (?, ?, ?, ?)',
-      [nombre.trim(), email.trim().toLowerCase(), hash, (nombre_negocio || '').trim()]
+      `INSERT INTO usuarios (nombre, email, password_hash, nombre_negocio, es_admin, estado_suscripcion)
+       VALUES (?,?,?,?,?, ?)`,
+      [nombre.trim(), emailLow, hash, (nombre_negocio||'').trim(), esAdmin,
+       esAdmin ? 'activo' : 'sin_plan']
     );
-    const usuario = { id: result.insertId, nombre: nombre.trim(), email: email.trim().toLowerCase(), nombre_negocio: (nombre_negocio || '').trim() };
+    const usuario = {
+      id: result.insertId, nombre: nombre.trim(), email: emailLow,
+      nombre_negocio: (nombre_negocio||'').trim(),
+      es_admin: !!esAdmin,
+      estado_suscripcion: esAdmin ? 'activo' : 'sin_plan',
+    };
     const token = jwt.sign(usuario, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, usuario });
+    res.json({ token, usuario, dias_restantes: null });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY')
       return res.status(400).json({ error: 'Ya existe una cuenta con ese correo' });
@@ -180,18 +294,162 @@ app.post('/api/auth/login', async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ error: 'Email y contraseña requeridos' });
   try {
-    const rows = await q('SELECT * FROM usuarios WHERE email = ?', [email.trim().toLowerCase()]);
+    const rows = await q('SELECT * FROM usuarios WHERE email=?', [email.trim().toLowerCase()]);
     if (!rows.length) return res.status(401).json({ error: 'Credenciales incorrectas' });
     const user = rows[0];
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Credenciales incorrectas' });
-    const usuario = { id: user.id, nombre: user.nombre, email: user.email, nombre_negocio: user.nombre_negocio };
+
+    // Promover admin si email en ADMIN_EMAILS
+    if (!user.es_admin && ADMIN_EMAILS.includes(user.email)) {
+      await q(`UPDATE usuarios SET es_admin=1, estado_suscripcion='activo' WHERE id=?`, [user.id]);
+      user.es_admin = 1; user.estado_suscripcion = 'activo';
+    }
+
+    // Auto-expirar si corresponde
+    if (user.estado_suscripcion === 'activo') {
+      const expirado = await autoExpirar(user.id);
+      if (expirado) user.estado_suscripcion = 'vencido';
+    }
+
+    const dias_restantes = user.estado_suscripcion === 'activo'
+      ? await calcDiasRestantes(user.id) : null;
+
+    const usuario = {
+      id: user.id, nombre: user.nombre, email: user.email,
+      nombre_negocio: user.nombre_negocio,
+      es_admin: !!user.es_admin,
+      estado_suscripcion: user.estado_suscripcion,
+    };
     const token = jwt.sign(usuario, JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, usuario });
+    res.json({ token, usuario, dias_restantes });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error del servidor' });
   }
+});
+
+// ── SUSCRIPCIÓN ───────────────────────────────────────────────────────────────
+app.get('/api/suscripcion/estado', auth, async (req, res) => {
+  try {
+    const users = await q(`SELECT estado_suscripcion, es_admin FROM usuarios WHERE id=?`, [req.user.id]);
+    if (!users.length) return res.status(404).json({ error: 'Usuario no encontrado' });
+    const user = users[0];
+
+    if (user.estado_suscripcion === 'activo') {
+      const expirado = await autoExpirar(req.user.id);
+      if (expirado) user.estado_suscripcion = 'vencido';
+    }
+
+    const dias_restantes = user.estado_suscripcion === 'activo'
+      ? await calcDiasRestantes(req.user.id) : null;
+
+    const solicitud = user.estado_suscripcion === 'pendiente'
+      ? (await q(`SELECT id, metodo_pago, referencia_pago, created_at FROM suscripciones
+                  WHERE usuario_id=? AND estado='pendiente' ORDER BY created_at DESC LIMIT 1`,
+                  [req.user.id]))[0] || null
+      : null;
+
+    res.json({ estado: user.estado_suscripcion, es_admin: !!user.es_admin, dias_restantes, solicitud });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/suscripcion/solicitar', auth, async (req, res) => {
+  const { metodo_pago, referencia_pago } = req.body;
+  if (!metodo_pago || !referencia_pago)
+    return res.status(400).json({ error: 'Método y referencia de pago son requeridos' });
+  try {
+    await q(`DELETE FROM suscripciones WHERE usuario_id=? AND estado='pendiente'`, [req.user.id]);
+    const result = await q(
+      `INSERT INTO suscripciones (usuario_id, estado, metodo_pago, referencia_pago, monto)
+       VALUES (?, 'pendiente', ?, ?, ?)`,
+      [req.user.id, metodo_pago, referencia_pago.trim(), PRECIO_PLAN]
+    );
+    await q(`UPDATE usuarios SET estado_suscripcion='pendiente' WHERE id=?`, [req.user.id]);
+    res.json({ ok: true, id: result.insertId });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/suscripcion/activar', auth, async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ error: 'Token requerido' });
+  try {
+    const subs = await q(
+      `SELECT * FROM suscripciones WHERE usuario_id=? AND token=? AND estado='pendiente'`,
+      [req.user.id, token.trim().toUpperCase()]
+    );
+    if (!subs.length) return res.status(400).json({ error: 'Token inválido o ya utilizado' });
+
+    const fechaFin = new Date();
+    fechaFin.setDate(fechaFin.getDate() + 30);
+
+    await q(
+      `UPDATE suscripciones SET estado='activo', fecha_inicio=NOW(), fecha_fin=? WHERE id=?`,
+      [fechaFin, subs[0].id]
+    );
+    await q(`UPDATE usuarios SET estado_suscripcion='activo' WHERE id=?`, [req.user.id]);
+
+    res.json({ ok: true, fecha_fin: fechaFin });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+app.get('/api/admin/suscripciones', adminAuth, async (req, res) => {
+  try {
+    const rows = await q(`
+      SELECT s.id, s.estado, s.metodo_pago, s.referencia_pago, s.token,
+             s.token_enviado_en, s.fecha_inicio, s.fecha_fin, s.monto, s.created_at,
+             u.nombre, u.email, u.nombre_negocio
+      FROM suscripciones s
+      JOIN usuarios u ON s.usuario_id = u.id
+      ORDER BY
+        CASE s.estado WHEN 'pendiente' THEN 0 WHEN 'activo' THEN 1 ELSE 2 END,
+        s.created_at DESC
+    `);
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/admin/generar-token/:id', adminAuth, async (req, res) => {
+  try {
+    const subs = await q(
+      `SELECT s.*, u.email, u.nombre FROM suscripciones s
+       JOIN usuarios u ON s.usuario_id = u.id WHERE s.id=?`,
+      [req.params.id]
+    );
+    if (!subs.length) return res.status(404).json({ error: 'Solicitud no encontrada' });
+    const sub = subs[0];
+    if (sub.estado !== 'pendiente')
+      return res.status(400).json({ error: 'Esta solicitud no está pendiente' });
+
+    const token = generarTokenAlfanum();
+    await q(`UPDATE suscripciones SET token=?, token_enviado_en=NOW() WHERE id=?`, [token, sub.id]);
+    await sendTokenEmail(sub.email, sub.nombre, token);
+
+    res.json({ ok: true, token });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/admin/alertas', adminAuth, async (req, res) => {
+  try {
+    const pendientes = await q(`
+      SELECT s.id, s.metodo_pago, s.referencia_pago, s.created_at, s.monto,
+             u.nombre, u.email, u.nombre_negocio
+      FROM suscripciones s JOIN usuarios u ON s.usuario_id=u.id
+      WHERE s.estado='pendiente' ORDER BY s.created_at ASC`);
+
+    const por_vencer = await q(`
+      SELECT s.id, s.fecha_fin, u.nombre, u.email,
+             DATEDIFF(s.fecha_fin, NOW()) AS dias_restantes
+      FROM suscripciones s JOIN usuarios u ON s.usuario_id=u.id
+      WHERE s.estado='activo' AND s.fecha_fin BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 5 DAY)
+      ORDER BY s.fecha_fin ASC`);
+
+    const activas = await q(`
+      SELECT COUNT(*) AS total FROM suscripciones WHERE estado='activo'`);
+
+    res.json({ pendientes, por_vencer, activas: activas[0].total });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
@@ -205,160 +463,110 @@ app.get('/api/dashboard', auth, async (req, res) => {
       `SELECT COALESCE(SUM(monto),0) AS gastos FROM finanzas
        WHERE usuario_id=? AND tipo='gasto' AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]);
     const [{ total_productos }] = await q(`SELECT COUNT(*) AS total_productos FROM productos WHERE usuario_id=?`, [uid]);
-    const [{ stock_bajo }] = await q(`SELECT COUNT(*) AS stock_bajo FROM productos WHERE usuario_id=? AND stock <= stock_minimo`, [uid]);
+    const [{ stock_bajo }] = await q(`SELECT COUNT(*) AS stock_bajo FROM productos WHERE usuario_id=? AND stock<=stock_minimo`, [uid]);
     const [{ total_proveedores }] = await q(`SELECT COUNT(*) AS total_proveedores FROM proveedores WHERE usuario_id=?`, [uid]);
     const metas = await q(`SELECT * FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC LIMIT 1`, [uid]);
-
     res.json({
-      ingresos: parseFloat(ingresos),
-      gastos: parseFloat(gastos),
+      ingresos: parseFloat(ingresos), gastos: parseFloat(gastos),
       flujo_caja: parseFloat(ingresos) - parseFloat(gastos),
-      total_productos,
-      stock_bajo,
-      total_proveedores,
+      total_productos, stock_bajo, total_proveedores,
       meta_principal: metas[0] || null,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── FINANZAS ──────────────────────────────────────────────────────────────────
 app.get('/api/finanzas', auth, async (req, res) => {
-  try {
-    const rows = await q(`SELECT * FROM finanzas WHERE usuario_id=? ORDER BY fecha DESC, created_at DESC LIMIT 100`, [req.user.id]);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { res.json(await q(`SELECT * FROM finanzas WHERE usuario_id=? ORDER BY fecha DESC, created_at DESC LIMIT 100`, [req.user.id])); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.post('/api/finanzas', auth, async (req, res) => {
   const { tipo, descripcion, monto, categoria, fecha } = req.body;
-  if (!tipo || monto == null) return res.status(400).json({ error: 'Tipo y monto son requeridos' });
+  if (!tipo || monto==null) return res.status(400).json({ error: 'Tipo y monto requeridos' });
   try {
-    const result = await q(
-      `INSERT INTO finanzas (usuario_id, tipo, descripcion, monto, categoria, fecha) VALUES (?,?,?,?,?,?)`,
-      [req.user.id, tipo, descripcion || '', parseFloat(monto), categoria || '', fecha || new Date().toISOString().split('T')[0]]
-    );
-    res.json({ id: result.insertId });
+    const r = await q(`INSERT INTO finanzas (usuario_id,tipo,descripcion,monto,categoria,fecha) VALUES (?,?,?,?,?,?)`,
+      [req.user.id, tipo, descripcion||'', parseFloat(monto), categoria||'', fecha||new Date().toISOString().split('T')[0]]);
+    res.json({ id: r.insertId });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.delete('/api/finanzas/:id', auth, async (req, res) => {
-  try {
-    await q(`DELETE FROM finanzas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { await q(`DELETE FROM finanzas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]); res.json({ ok:true }); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── PRODUCTOS ─────────────────────────────────────────────────────────────────
 app.get('/api/productos', auth, async (req, res) => {
-  try {
-    const rows = await q(`SELECT * FROM productos WHERE usuario_id=? ORDER BY nombre`, [req.user.id]);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { res.json(await q(`SELECT * FROM productos WHERE usuario_id=? ORDER BY nombre`, [req.user.id])); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.post('/api/productos', auth, async (req, res) => {
   const { nombre, categoria, precio_venta, costo_compra, stock, stock_minimo } = req.body;
-  if (!nombre || precio_venta == null) return res.status(400).json({ error: 'Nombre y precio son requeridos' });
+  if (!nombre||precio_venta==null) return res.status(400).json({ error: 'Nombre y precio requeridos' });
   try {
-    const result = await q(
-      `INSERT INTO productos (usuario_id, nombre, categoria, precio_venta, costo_compra, stock, stock_minimo) VALUES (?,?,?,?,?,?,?)`,
-      [req.user.id, nombre.trim(), categoria || '', parseFloat(precio_venta), parseFloat(costo_compra || 0), parseInt(stock || 0), parseInt(stock_minimo || 5)]
-    );
-    res.json({ id: result.insertId });
+    const r = await q(`INSERT INTO productos (usuario_id,nombre,categoria,precio_venta,costo_compra,stock,stock_minimo) VALUES (?,?,?,?,?,?,?)`,
+      [req.user.id, nombre.trim(), categoria||'', parseFloat(precio_venta), parseFloat(costo_compra||0), parseInt(stock||0), parseInt(stock_minimo||5)]);
+    res.json({ id: r.insertId });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.put('/api/productos/:id', auth, async (req, res) => {
   const { nombre, categoria, precio_venta, costo_compra, stock, stock_minimo } = req.body;
   try {
-    await q(
-      `UPDATE productos SET nombre=?, categoria=?, precio_venta=?, costo_compra=?, stock=?, stock_minimo=? WHERE id=? AND usuario_id=?`,
-      [nombre, categoria || '', parseFloat(precio_venta), parseFloat(costo_compra || 0), parseInt(stock), parseInt(stock_minimo || 5), req.params.id, req.user.id]
-    );
-    res.json({ ok: true });
+    await q(`UPDATE productos SET nombre=?,categoria=?,precio_venta=?,costo_compra=?,stock=?,stock_minimo=? WHERE id=? AND usuario_id=?`,
+      [nombre, categoria||'', parseFloat(precio_venta), parseFloat(costo_compra||0), parseInt(stock), parseInt(stock_minimo||5), req.params.id, req.user.id]);
+    res.json({ ok:true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.delete('/api/productos/:id', auth, async (req, res) => {
-  try {
-    await q(`DELETE FROM productos WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { await q(`DELETE FROM productos WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]); res.json({ ok:true }); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── PROVEEDORES ───────────────────────────────────────────────────────────────
 app.get('/api/proveedores', auth, async (req, res) => {
-  try {
-    const rows = await q(`SELECT * FROM proveedores WHERE usuario_id=? ORDER BY nombre`, [req.user.id]);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { res.json(await q(`SELECT * FROM proveedores WHERE usuario_id=? ORDER BY nombre`, [req.user.id])); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.post('/api/proveedores', auth, async (req, res) => {
   const { nombre, categoria, contacto, telefono, plazo_entrega_dias } = req.body;
   if (!nombre) return res.status(400).json({ error: 'Nombre requerido' });
   try {
-    const result = await q(
-      `INSERT INTO proveedores (usuario_id, nombre, categoria, contacto, telefono, plazo_entrega_dias) VALUES (?,?,?,?,?,?)`,
-      [req.user.id, nombre.trim(), categoria || '', contacto || '', telefono || '', parseInt(plazo_entrega_dias || 3)]
-    );
-    res.json({ id: result.insertId });
+    const r = await q(`INSERT INTO proveedores (usuario_id,nombre,categoria,contacto,telefono,plazo_entrega_dias) VALUES (?,?,?,?,?,?)`,
+      [req.user.id, nombre.trim(), categoria||'', contacto||'', telefono||'', parseInt(plazo_entrega_dias||3)]);
+    res.json({ id: r.insertId });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.delete('/api/proveedores/:id', auth, async (req, res) => {
-  try {
-    await q(`DELETE FROM proveedores WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { await q(`DELETE FROM proveedores WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]); res.json({ ok:true }); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── METAS ─────────────────────────────────────────────────────────────────────
 app.get('/api/metas', auth, async (req, res) => {
-  try {
-    const rows = await q(`SELECT * FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC`, [req.user.id]);
-    res.json(rows);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { res.json(await q(`SELECT * FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC`, [req.user.id])); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.post('/api/metas', auth, async (req, res) => {
   const { titulo, monto_objetivo, monto_actual, es_principal, fecha_limite } = req.body;
-  if (!titulo || monto_objetivo == null) return res.status(400).json({ error: 'Título y objetivo requeridos' });
+  if (!titulo||monto_objetivo==null) return res.status(400).json({ error: 'Título y objetivo requeridos' });
   try {
-    // Si esta será la principal, quitar es_principal de las demás
-    if (es_principal) {
-      await q(`UPDATE metas SET es_principal=0 WHERE usuario_id=?`, [req.user.id]);
-    }
-    const result = await q(
-      `INSERT INTO metas (usuario_id, titulo, monto_objetivo, monto_actual, es_principal, fecha_limite) VALUES (?,?,?,?,?,?)`,
-      [req.user.id, titulo.trim(), parseFloat(monto_objetivo), parseFloat(monto_actual || 0), es_principal ? 1 : 0, fecha_limite || null]
-    );
-    res.json({ id: result.insertId });
+    if (es_principal) await q(`UPDATE metas SET es_principal=0 WHERE usuario_id=?`, [req.user.id]);
+    const r = await q(`INSERT INTO metas (usuario_id,titulo,monto_objetivo,monto_actual,es_principal,fecha_limite) VALUES (?,?,?,?,?,?)`,
+      [req.user.id, titulo.trim(), parseFloat(monto_objetivo), parseFloat(monto_actual||0), es_principal?1:0, fecha_limite||null]);
+    res.json({ id: r.insertId });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.put('/api/metas/:id', auth, async (req, res) => {
   const { monto_actual, es_principal } = req.body;
   try {
-    if (es_principal) {
-      await q(`UPDATE metas SET es_principal=0 WHERE usuario_id=?`, [req.user.id]);
-    }
-    await q(
-      `UPDATE metas SET monto_actual=?, es_principal=? WHERE id=? AND usuario_id=?`,
-      [parseFloat(monto_actual), es_principal ? 1 : 0, req.params.id, req.user.id]
-    );
-    res.json({ ok: true });
+    if (es_principal) await q(`UPDATE metas SET es_principal=0 WHERE usuario_id=?`, [req.user.id]);
+    await q(`UPDATE metas SET monto_actual=?,es_principal=? WHERE id=? AND usuario_id=?`,
+      [parseFloat(monto_actual), es_principal?1:0, req.params.id, req.user.id]);
+    res.json({ ok:true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
-
 app.delete('/api/metas/:id', auth, async (req, res) => {
-  try {
-    await q(`DELETE FROM metas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
-    res.json({ ok: true });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  try { await q(`DELETE FROM metas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]); res.json({ ok:true }); }
+  catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // ── CHATBOT ───────────────────────────────────────────────────────────────────
@@ -367,139 +575,79 @@ app.post('/api/chat', auth, async (req, res) => {
   if (!mensaje?.trim()) return res.status(400).json({ error: 'Mensaje requerido' });
   const uid = req.user.id;
   try {
-    const productos = await q(`SELECT * FROM productos WHERE usuario_id=?`, [uid]);
-    const proveedores = await q(`SELECT * FROM proveedores WHERE usuario_id=?`, [uid]);
-    const metas = await q(`SELECT * FROM metas WHERE usuario_id=?`, [uid]);
-    const finanzas = await q(
-      `SELECT * FROM finanzas WHERE usuario_id=? AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]
-    );
-    const ingresos = finanzas.filter(f => f.tipo === 'ingreso').reduce((s, f) => s + parseFloat(f.monto), 0);
-    const gastos = finanzas.filter(f => f.tipo === 'gasto').reduce((s, f) => s + parseFloat(f.monto), 0);
-    const stockBajo = productos.filter(p => parseInt(p.stock) <= parseInt(p.stock_minimo));
-    const respuesta = generarRespuesta(mensaje, { usuario: req.user, ingresos, gastos, productos, stockBajo, proveedores, metas });
-    res.json({ respuesta });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
-  }
+    const productos  = await q(`SELECT * FROM productos WHERE usuario_id=?`, [uid]);
+    const proveedores= await q(`SELECT * FROM proveedores WHERE usuario_id=?`, [uid]);
+    const metas      = await q(`SELECT * FROM metas WHERE usuario_id=?`, [uid]);
+    const finanzas   = await q(`SELECT * FROM finanzas WHERE usuario_id=? AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]);
+    const ingresos   = finanzas.filter(f=>f.tipo==='ingreso').reduce((s,f)=>s+parseFloat(f.monto),0);
+    const gastos     = finanzas.filter(f=>f.tipo==='gasto').reduce((s,f)=>s+parseFloat(f.monto),0);
+    const stockBajo  = productos.filter(p=>parseInt(p.stock)<=parseInt(p.stock_minimo));
+    res.json({ respuesta: generarRespuesta(mensaje, { usuario:req.user, ingresos, gastos, productos, stockBajo, proveedores, metas }) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 function generarRespuesta(mensaje, ctx) {
   const msg = mensaje.toLowerCase().trim();
   const { usuario, ingresos, gastos, productos, stockBajo, proveedores, metas } = ctx;
   const flujo = ingresos - gastos;
-  const nombre = (usuario.nombre || 'Empresario').split(' ')[0];
-  const fmt = n => new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(n || 0);
+  const nombre = (usuario.nombre||'Empresario').split(' ')[0];
+  const fmt = n => new Intl.NumberFormat('es-CO',{maximumFractionDigits:0}).format(n||0);
   const $$ = n => `$${fmt(n)}`;
 
-  // Saludo
   if (/^(hola|hey|buenos|buen\s|qué\s*tal|buenas|saludo|hi\b)/i.test(msg)) {
-    const alertas = [];
+    const alertas=[];
     if (stockBajo.length) alertas.push(`⚠️ ${stockBajo.length} producto(s) con stock bajo`);
-    if (flujo < 0 && ingresos > 0) alertas.push(`📉 Flujo de caja negativo este mes`);
-    let r = `¡Hola, ${nombre}! 👋 Soy tu **Mentor de Bolsillo**.\n\n`;
-    if (alertas.length) r += `**Alertas:**\n${alertas.map(a => `• ${a}`).join('\n')}\n\n`;
-    r += `Puedo ayudarte con:\n• "¿Cómo están mis finanzas?"\n• "¿Qué stock tengo bajo?"\n• "Dame un consejo"\n• "¿Cuál es mi mejor producto?"`;
+    if (flujo<0&&ingresos>0) alertas.push(`📉 Flujo de caja negativo este mes`);
+    let r=`¡Hola, ${nombre}! 👋 Soy tu **Mentor de Bolsillo**.\n\n`;
+    if (alertas.length) r+=`**Alertas:**\n${alertas.map(a=>`• ${a}`).join('\n')}\n\n`;
+    r+=`Puedo ayudarte con:\n• "¿Cómo están mis finanzas?"\n• "¿Qué stock tengo bajo?"\n• "Dame un consejo"`;
     return r;
   }
-
-  // Finanzas
-  if (/finanza|dinero|caja|flujo|cuánto.*queda|cuánto.*gan|ingreso|gasto|plata/i.test(msg)) {
-    if (!ingresos && !gastos)
-      return `${nombre}, aún no hay movimientos este mes. Ve a **Mi Dinero** y registra tus primeros ingresos y gastos. 📊`;
-    const margen = ingresos > 0 ? ((flujo / ingresos) * 100).toFixed(1) : 0;
-    let r = `📊 **Finanzas de este mes:**\n\n• Ingresos: **${$$(ingresos)}**\n• Gastos: **${$$(gastos)}**\n• Flujo neto: **${flujo >= 0 ? '+' : ''}${$$(Math.abs(flujo))}** (${margen}%)\n\n`;
-    if (flujo > 0) r += `✅ ¡Rentable! Guarda **${$$(flujo * 0.3)}** (30%) para reinvertir en stock.`;
-    else if (flujo < 0) r += `⚠️ Estás gastando más de lo que ingresas. Revisa qué gastos puedes reducir.`;
-    else r += `⚖️ Equilibrio exacto. Aumenta ingresos o reduce un gasto para generar utilidad.`;
+  if (/finanza|dinero|caja|flujo|ingreso|gasto|plata/i.test(msg)) {
+    if (!ingresos&&!gastos) return `${nombre}, aún no hay movimientos este mes. Ve a **Mi Dinero** y registra tus primeros datos. 📊`;
+    const margen=ingresos>0?((flujo/ingresos)*100).toFixed(1):0;
+    let r=`📊 **Finanzas de este mes:**\n\n• Ingresos: **${$$(ingresos)}**\n• Gastos: **${$$(gastos)}**\n• Flujo neto: **${flujo>=0?'+':''}${$$(Math.abs(flujo))}** (${margen}%)\n\n`;
+    if (flujo>0) r+=`✅ ¡Rentable! Guarda **${$$(flujo*0.3)}** (30%) para reinvertir.`;
+    else if (flujo<0) r+=`⚠️ Estás gastando más de lo que ingresas. Revisa qué gastos reducir.`;
+    else r+=`⚖️ Equilibrio exacto. Aumenta ingresos o reduce gastos.`;
     return r;
   }
-
-  // Stock
-  if (/stock|inventario|producto|existencia|agot|cuántos.*producto/i.test(msg)) {
-    if (!productos.length)
-      return `${nombre}, aún no tienes productos en inventario. Ve a **Stock Visual** para agregarlos. 📦`;
-    let r = `📦 **Inventario:**\n\n• Productos registrados: **${productos.length}**\n• Stock OK: **${productos.length - stockBajo.length}**\n`;
-    if (stockBajo.length) {
-      r += `• ⚠️ Stock bajo: **${stockBajo.length}** → ${stockBajo.map(p => p.nombre).join(', ')}\n\n🚨 Repón estos productos pronto para no perder ventas.`;
-    } else {
-      r += `\n✅ ¡Todo tu inventario tiene stock suficiente!`;
-    }
+  if (/stock|inventario|producto|existencia|agot/i.test(msg)) {
+    if (!productos.length) return `${nombre}, aún no tienes productos. Ve a **Stock Visual** para agregarlos. 📦`;
+    let r=`📦 **Inventario:**\n\n• Registrados: **${productos.length}**\n• OK: **${productos.length-stockBajo.length}**\n`;
+    if (stockBajo.length) r+=`• ⚠️ Stock bajo: **${stockBajo.length}** → ${stockBajo.map(p=>p.nombre).join(', ')}\n\n🚨 Repón estos productos pronto.`;
+    else r+=`\n✅ Todo el inventario tiene stock suficiente.`;
     return r;
   }
-
-  // Margen / rentabilidad
-  if (/margen|rentab|utilidad|ganancia.*product|product.*mejor|más.*vend/i.test(msg)) {
-    if (!productos.length)
-      return `${nombre}, registra tus productos en **Stock Visual** con costo y precio para calcular márgenes. 📦`;
-    const conMargen = productos
-      .map(p => ({ ...p, margen: p.precio_venta > 0 ? ((p.precio_venta - p.costo_compra) / p.precio_venta * 100) : 0 }))
-      .sort((a, b) => b.margen - a.margen);
-    const top = conMargen[0];
-    const avg = (conMargen.reduce((s, p) => s + p.margen, 0) / conMargen.length).toFixed(1);
-    let r = `📈 **Márgenes de tus productos:**\n\n• Promedio: **${avg}%**\n• Más rentable: **${top.nombre}** (${top.margen.toFixed(1)}%)\n\n`;
-    r += `💡 Enfócate en vender más **"${top.nombre}"** — es tu producto estrella.`;
-    if (conMargen.length > 1) {
-      const bajo = conMargen[conMargen.length - 1];
-      if (bajo.margen < 15) r += `\n⚠️ **"${bajo.nombre}"** tiene bajo margen (${bajo.margen.toFixed(1)}%). Considera subir su precio.`;
-    }
+  if (/margen|rentab|utilidad|ganancia|product.*mejor/i.test(msg)) {
+    if (!productos.length) return `${nombre}, registra productos con costo y precio para calcular márgenes. 📦`;
+    const conMargen=productos.map(p=>({...p,margen:p.precio_venta>0?((p.precio_venta-p.costo_compra)/p.precio_venta*100):0})).sort((a,b)=>b.margen-a.margen);
+    const top=conMargen[0];
+    const avg=(conMargen.reduce((s,p)=>s+p.margen,0)/conMargen.length).toFixed(1);
+    let r=`📈 **Márgenes:**\n\n• Promedio: **${avg}%**\n• Más rentable: **${top.nombre}** (${top.margen.toFixed(1)}%)\n\n💡 Enfócate en vender más **"${top.nombre}"**.`;
     return r;
   }
-
-  // Proveedores
-  if (/proveedor|insumo|surtir|materia prima|quién.*vende/i.test(msg)) {
-    if (!proveedores.length)
-      return `${nombre}, aún no tienes proveedores registrados. Ve a **Tus Aliados** para agregarlos. 🚚`;
-    return `🚚 **Tus proveedores:**\n\n• Total registrados: **${proveedores.length}**\n${proveedores.map(p => `• ${p.nombre}${p.plazo_entrega_dias ? ` (${p.plazo_entrega_dias} días entrega)` : ''}`).join('\n')}\n\n💡 Mantén buena relación con ellos para negociar mejores precios y plazos.`;
+  if (/proveedor|insumo|surtir/i.test(msg)) {
+    if (!proveedores.length) return `${nombre}, aún no tienes proveedores. Ve a **Tus Aliados**. 🚚`;
+    return `🚚 **Proveedores:** ${proveedores.length} registrados\n${proveedores.map(p=>`• ${p.nombre}${p.plazo_entrega_dias?` (${p.plazo_entrega_dias}d)`:''}`).join('\n')}`;
   }
-
-  // Metas
-  if (/meta|objetivo|progreso|logro|cuánto.*falta|cuándo.*llego/i.test(msg)) {
-    if (!metas.length)
-      return `${nombre}, aún no tienes metas definidas. Ve a **Tu Norte** y crea tu primera meta. ¡Los negocios con metas claras crecen 2x más! 🎯`;
-    const m = metas.find(x => x.es_principal) || metas[0];
-    const pct = m.monto_objetivo > 0 ? (m.monto_actual / m.monto_objetivo * 100).toFixed(0) : 0;
-    const falta = Math.max(0, parseFloat(m.monto_objetivo) - parseFloat(m.monto_actual));
-    let r = `🎯 **Meta principal:**\n\n• "${m.titulo}"\n• Progreso: **${$$(m.monto_actual)} / ${$$(m.monto_objetivo)}** (${pct}%)\n• Falta: **${$$(falta)}**\n\n`;
-    r += parseInt(pct) >= 70 ? `🚀 ¡Excelente avance! Mantén el ritmo.` : parseInt(pct) >= 40 ? `💪 Vas bien. Enfócate en tus productos más rentables para acelerar.` : `💡 Aún hay camino. Define 3 acciones concretas para esta semana.`;
-    return r;
+  if (/meta|objetivo|progreso|logro/i.test(msg)) {
+    if (!metas.length) return `${nombre}, crea tu primera meta en **Tu Norte**. 🎯`;
+    const m=metas.find(x=>x.es_principal)||metas[0];
+    const pct=m.monto_objetivo>0?(m.monto_actual/m.monto_objetivo*100).toFixed(0):0;
+    const falta=Math.max(0,parseFloat(m.monto_objetivo)-parseFloat(m.monto_actual));
+    return `🎯 **"${m.titulo}"**\n• ${$$(m.monto_actual)} / ${$$(m.monto_objetivo)} (${pct}%)\n• Falta: **${$$(falta)}**\n\n${parseInt(pct)>=70?'🚀 ¡Excelente avance!':parseInt(pct)>=40?'💪 Vas bien, sigue adelante.':'💡 Define 3 acciones concretas esta semana.'}`;
   }
-
-  // Consejo
-  if (/consejo|ayuda|qué.*hago|qué.*debo|cómo.*mejo|estrategia|recomienda|qué.*puedo|qué.*hacer/i.test(msg)) {
-    const tips = [];
-    if (stockBajo.length) tips.push(`⚠️ **Reponer stock:** ${stockBajo.map(p => `"${p.nombre}"`).join(', ')} están por agotarse.`);
-    if (flujo > 0) tips.push(`💰 **Regla del 30%:** Tienes ${$$(flujo)} de flujo positivo. Guarda ${$$(flujo * 0.3)} para reinvertir.`);
-    if (productos.length) {
-      const top = [...productos].sort((a, b) => (parseFloat(b.precio_venta) - parseFloat(b.costo_compra)) - (parseFloat(a.precio_venta) - parseFloat(a.costo_compra)))[0];
-      tips.push(`🚀 **Producto estrella:** "${top.nombre}" tiene el mejor margen. ¡Véndelo más!`);
-    }
-    if (metas.length) {
-      const m = metas.find(x => x.es_principal) || metas[0];
-      const pct = m.monto_objetivo > 0 ? (m.monto_actual / m.monto_objetivo * 100) : 0;
-      if (pct < 50) tips.push(`🎯 **Meta rezagada:** Solo llevas el ${pct.toFixed(0)}% de "${m.titulo}". Define acciones concretas esta semana.`);
-    }
-    if (!tips.length) return `${nombre}, todo luce bien. ¡Sigue registrando datos para consejos más precisos! 🌟\n\n**Principios clave:**\n• Registra cada movimiento diariamente\n• Revisa márgenes cada semana\n• Nunca dejes stock en cero\n• Guarda el 30% de tu ganancia`;
-    return `💡 **Mis consejos para ti, ${nombre}:**\n\n${tips.map((t, i) => `${i + 1}. ${t}`).join('\n\n')}`;
+  if (/consejo|ayuda|qué.*hago|estrategia|recomienda/i.test(msg)) {
+    const tips=[];
+    if (stockBajo.length) tips.push(`⚠️ **Reponer stock:** ${stockBajo.map(p=>`"${p.nombre}"`).join(', ')}`);
+    if (flujo>0) tips.push(`💰 **Regla 30%:** Guarda ${$$(flujo*0.3)} para reinvertir`);
+    if (productos.length) { const top=[...productos].sort((a,b)=>(parseFloat(b.precio_venta)-parseFloat(b.costo_compra))-(parseFloat(a.precio_venta)-parseFloat(a.costo_compra)))[0]; tips.push(`🚀 **Producto estrella:** "${top.nombre}" tiene el mejor margen`); }
+    if (!tips.length) return `${nombre}, todo luce bien. Sigue registrando datos para consejos más precisos. 🌟`;
+    return `💡 **Mis consejos, ${nombre}:**\n\n${tips.map((t,i)=>`${i+1}. ${t}`).join('\n\n')}`;
   }
-
-  // Cómo usar la app
-  if (/cómo.*uso|cómo.*funciona|qué.*hace|dónde.*registro|cómo.*agrego/i.test(msg)) {
-    return `📱 **Cómo usar Faro, ${nombre}:**\n\n💵 **Mi Dinero** → Registra ingresos y gastos\n📦 **Stock Visual** → Gestiona productos e inventario\n🚚 **Proveedores** → Registra a quién te surte\n🎯 **Metas** → Define y sigue tus objetivos\n🔧 **Herramientas** → Calculadoras financieras\n🤖 **Yo (Mentor)** → Consejos personalizados\n\n¿Sobre qué sección necesitas ayuda?`;
-  }
-
-  // Agradecimiento
-  if (/gracias|perfecto|excelente|genial|muy bien|chévere|bacano|buenísimo/i.test(msg)) {
-    return `¡Con gusto, ${nombre}! 😊 Para eso estoy aquí. ¿Hay algo más en lo que pueda ayudarte?`;
-  }
-
-  // Escenarios
-  if (/qué pasa.*si|qué pasaría|simula|escenario|si subiera|si bajara|si vendiera/i.test(msg)) {
-    return `🔮 ¡Buena pregunta, ${nombre}! Para simular escenarios usa la **Calculadora de Margen** en Herramientas.\n\nO cuéntame el escenario específico, por ejemplo:\n• "¿Qué pasa si subo el precio 10%?"\n• "¿Cuánto necesito vender para cubrir $X gastos?"\n\nY yo te ayudo a calcularlo.`;
-  }
-
-  // Default
-  return `${nombre}, entendí tu pregunta. Puedo ayudarte con:\n\n• 💵 **Finanzas** y flujo de caja\n• 📦 **Inventario** y stock\n• 🚚 **Proveedores** y pagos\n• 🎯 **Metas** y progreso\n• 📈 **Estrategias** para mejorar ventas\n\n¿Cuál de estos temas te interesa?`;
+  if (/gracias|perfecto|excelente|genial/i.test(msg)) return `¡Con gusto, ${nombre}! 😊 ¿En qué más puedo ayudarte?`;
+  return `${nombre}, puedo ayudarte con:\n\n• 💵 Finanzas\n• 📦 Inventario\n• 🚚 Proveedores\n• 🎯 Metas\n• 📈 Estrategias\n\n¿Sobre qué quieres saber?`;
 }
 
 // ── FRONTEND ──────────────────────────────────────────────────────────────────
@@ -511,10 +659,7 @@ initDB()
     const port = parseInt(process.env.PORT) || 3002;
     app.listen(port, () => {
       console.log(`🚀 Faro Backend → http://localhost:${port}`);
-      console.log(`   DB: ${DB_NAME} | Puerto MySQL: ${process.env.DB_PORT || 3308}`);
+      console.log(`   DB: ${DB_NAME} | ADMIN_EMAILS: ${ADMIN_EMAILS.join(',') || '(ninguno)'}`);
     });
   })
-  .catch(err => {
-    console.error('No se pudo iniciar:', err.message);
-    process.exit(1);
-  });
+  .catch(err => { console.error('No se pudo iniciar:', err.message); process.exit(1); });
