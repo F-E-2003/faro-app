@@ -234,7 +234,7 @@
     <!-- ── SCREEN: PENDIENTE / ACTIVAR TOKEN ── -->
     <div id="sub-pendiente" class="hidden w-full max-w-md">
       <div class="rounded-[2rem] shadow-2xl p-8 text-center" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);">
-        <span class="material-symbols-outlined text-5xl text-amber-500 mb-2">pending</span>
+        <div class="text-5xl mb-2">⏳</div>
         <h2 class="font-headline font-black text-2xl text-[#006d43] mb-2">Pago en revisión</h2>
         <p class="text-slate-500 text-sm mb-6">Tu solicitud fue enviada. Un administrador verificará el pago y te enviará un <strong>token de activación</strong> por correo electrónico.</p>
         <div class="bg-[#f0faf5] rounded-2xl p-4 mb-6 text-left">
@@ -258,7 +258,7 @@
     <!-- ── SCREEN: VENCIDO ── -->
     <div id="sub-vencido" class="hidden w-full max-w-md">
       <div class="rounded-[2rem] shadow-2xl p-8 text-center" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);">
-        <span class="material-symbols-outlined text-5xl text-red-400 mb-2">lock</span>
+        <div class="text-5xl mb-2">🔒</div>
         <h2 class="font-headline font-black text-2xl text-slate-700 mb-2">Suscripción vencida</h2>
         <p class="text-slate-500 text-sm mb-6">Tu período de 30 días finalizó. Renueva para continuar usando Faro.</p>
         <button onclick="showSubScreen('pago')" class="w-full editorial-gradient text-white py-3 rounded-full font-bold hover:opacity-90 transition-opacity mb-3">
