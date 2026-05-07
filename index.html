@@ -359,7 +359,7 @@
 <main class="flex-1 flex flex-col min-w-0">
 
   <!-- TOP NAV -->
-  <header class="bg-[#f4fbf3]/80 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(22,29,24,0.06)]">
+  <header id="app-header" class="bg-[#f4fbf3]/80 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(22,29,24,0.06)]">
     <div class="flex justify-between items-center w-full px-4 sm:px-8 py-3 sm:py-4 max-w-screen-2xl mx-auto">
       <div class="flex items-center gap-4 sm:gap-8">
         <!-- Logo móvil -->
@@ -997,10 +997,16 @@
               <p class="text-white/70 text-xs sm:text-sm mt-0.5 hidden sm:block">Faro · Gestión de usuarios y suscripciones</p>
             </div>
           </div>
-          <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shrink-0 transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
-            <span class="material-symbols-outlined text-sm">refresh</span>
-            <span class="hidden sm:inline">Actualizar</span>
-          </button>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="loadAdminPanel()" class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-colors" style="background:rgba(255,255,255,0.18)" onmouseover="this.style.background='rgba(255,255,255,0.28)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">
+              <span class="material-symbols-outlined text-sm">refresh</span>
+              <span class="hidden sm:inline">Actualizar</span>
+            </button>
+            <button onclick="logout()" class="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-colors" style="background:rgba(255,255,255,0.12)" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+              <span class="material-symbols-outlined text-sm">logout</span>
+              <span class="hidden sm:inline">Salir</span>
+            </button>
+          </div>
         </div>
       </div>
       <div class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
@@ -1394,9 +1400,9 @@ function enterApp(user, diasRestantes) {
     if (mentorBtn) mentorBtn.style.display = 'none';
     const sidebarMentorBtn = document.querySelector('.mt-auto button[onclick="toggleChat()"]');
     if (sidebarMentorBtn) sidebarMentorBtn.style.display = 'none';
-    // CRÍTICO: usar style.display para override md:flex de Tailwind
-    const topNav = document.getElementById('top-nav');
-    if (topNav) topNav.style.display = 'none';
+    // Ocultar header completo para admin (el panel verde es su propio header)
+    const appHeader = document.getElementById('app-header');
+    if (appHeader) appHeader.style.display = 'none';
     // Ocultar nav móvil de negocio, reemplazar con botón admin
     const mobileNav = document.getElementById('mobile-bottom-nav');
     if (mobileNav) {
