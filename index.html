@@ -610,11 +610,11 @@
             <p class="text-3xl font-headline font-black text-on-surface" id="kpi-proveedores">—</p>
             <p class="text-xs text-slate-400 font-bold">registrados</p>
           </div>
-          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm flex flex-col gap-2">
-            <span class="material-symbols-outlined text-error">ads_click</span>
+          <div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm flex flex-col gap-2 cursor-pointer hover:shadow-md transition-shadow" onclick="navigate('metas')">
+            <span class="material-symbols-outlined text-primary">ads_click</span>
             <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Meta Principal</p>
             <p class="text-3xl font-headline font-black text-on-surface" id="kpi-meta">—</p>
-            <p class="text-xs text-primary font-bold">avance</p>
+            <p class="text-xs text-slate-400 font-medium" id="dashboard-meta-hint">Sin meta activa</p>
           </div>
         </div>
 
@@ -1878,10 +1878,26 @@ async function loadDashboard() {
   }
   document.getElementById('kpi-proveedores').textContent = data.total_proveedores || 0;
   if (data.meta_principal) {
-    const pct = Math.min(100, Math.round((data.meta_principal.monto_actual / data.meta_principal.monto_objetivo) * 100));
-    document.getElementById('kpi-meta').textContent = pct + '%';
-    const falta = Math.max(0, data.meta_principal.monto_objetivo - data.meta_principal.monto_actual);
-    document.getElementById('dashboard-meta-hint').textContent = `Faltan ${fmt(falta)} para tu meta`;
+    const actual  = Number(data.meta_principal.monto_actual);
+    const objetivo = Number(data.meta_principal.monto_objetivo);
+    const pct = objetivo > 0 ? Math.min(100, Math.round((actual / objetivo) * 100)) : 0;
+    const cumplida = actual >= objetivo && objetivo > 0;
+    const metaEl = document.getElementById('kpi-meta');
+    const hintEl = document.getElementById('dashboard-meta-hint');
+    metaEl.textContent = cumplida ? '🏆 100%' : pct + '%';
+    metaEl.className = `text-3xl font-headline font-black ${cumplida ? 'text-primary' : 'text-on-surface'}`;
+    if (cumplida) {
+      hintEl.textContent = '¡Meta cumplida!';
+      hintEl.className = 'text-xs text-primary font-bold';
+    } else {
+      const falta = Math.max(0, objetivo - actual);
+      hintEl.textContent = `Faltan ${fmt(falta)} para tu meta`;
+      hintEl.className = 'text-xs text-slate-500 font-medium';
+    }
+  } else {
+    document.getElementById('kpi-meta').textContent = '—';
+    document.getElementById('dashboard-meta-hint').textContent = 'Sin meta activa';
+    document.getElementById('dashboard-meta-hint').className = 'text-xs text-slate-400';
   }
 }
 

@@ -581,19 +581,27 @@ app.get('/api/admin/alertas', adminAuth, async (req, res) => {
 app.get('/api/dashboard', auth, async (req, res) => {
   const uid = req.user.id;
   try {
-    const [{ ingresos }] = await q(
-      `SELECT COALESCE(SUM(monto),0) AS ingresos FROM finanzas
-       WHERE usuario_id=? AND tipo='ingreso' AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]);
+    // Ingresos: finanzas manuales + ventas del mes actual
+    const [{ ingresos_finanzas }] = await q(
+      `SELECT COALESCE(SUM(monto),0) AS ingresos_finanzas FROM finanzas
+       WHERE usuario_id=? AND tipo='ingreso' AND categoria != 'Ventas'
+       AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]);
+    const [{ ingresos_ventas }] = await q(
+      `SELECT COALESCE(SUM(total),0) AS ingresos_ventas FROM ventas
+       WHERE usuario_id=? AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]);
+    const ingresos = parseFloat(ingresos_finanzas) + parseFloat(ingresos_ventas);
     const [{ gastos }] = await q(
       `SELECT COALESCE(SUM(monto),0) AS gastos FROM finanzas
        WHERE usuario_id=? AND tipo='gasto' AND MONTH(fecha)=MONTH(NOW()) AND YEAR(fecha)=YEAR(NOW())`, [uid]);
     const [{ total_productos }] = await q(`SELECT COUNT(*) AS total_productos FROM productos WHERE usuario_id=?`, [uid]);
     const [{ stock_bajo }] = await q(`SELECT COUNT(*) AS stock_bajo FROM productos WHERE usuario_id=? AND stock<=stock_minimo`, [uid]);
     const [{ total_proveedores }] = await q(`SELECT COUNT(*) AS total_proveedores FROM proveedores WHERE usuario_id=?`, [uid]);
+    // Meta: sincronizar antes de leer
+    await syncMetaPrincipal(uid);
     const metas = await q(`SELECT * FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC LIMIT 1`, [uid]);
     res.json({
-      ingresos: parseFloat(ingresos), gastos: parseFloat(gastos),
-      flujo_caja: parseFloat(ingresos) - parseFloat(gastos),
+      ingresos, gastos,
+      flujo_caja: ingresos - parseFloat(gastos),
       total_productos, stock_bajo, total_proveedores,
       meta_principal: metas[0] || null,
     });
