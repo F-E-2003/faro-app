@@ -83,11 +83,52 @@
   .view { display: none; }
   .view.active { display: block; }
   .nav-item { transition: all 0.2s; }
-  /* Responsive: sidebar oculto por defecto en mobile */
+  /* ── RESPONSIVE MOBILE ── */
+  * { box-sizing: border-box; }
+  body { overflow-x: hidden; }
   @media (max-width: 767px) {
     #app-container { display: flex; flex-direction: column; }
     aside { display: none !important; }
     .view.active { padding-bottom: 5rem; }
+
+    /* Headings grandes → reducir en mobile */
+    .text-5xl  { font-size: 2rem !important; }
+    .text-6xl  { font-size: 2.25rem !important; }
+    .text-4xl  { font-size: 1.75rem !important; }
+    .lg\:text-6xl { font-size: 2.25rem !important; }
+    .lg\:p-12  { padding: 1.5rem !important; }
+
+    /* Padding de vistas */
+    .view.active > div { padding: 1.25rem !important; }
+
+    /* Secciones hero: no flex-row en mobile */
+    .flex.flex-col.md\:flex-row { flex-direction: column !important; }
+
+    /* Grids de 4 columnas → 2 en mobile (ya tienen grid-cols-2) */
+    /* Grids de 3 columnas → 1 en mobile */
+    .grid.grid-cols-1.md\:grid-cols-3 { grid-template-columns: 1fr !important; }
+
+    /* Botones grandes que desbordan */
+    .shrink-0 { flex-shrink: 1 !important; }
+    button.shrink-0, a.shrink-0 { width: 100%; justify-content: center; }
+
+    /* Modales: ancho completo en mobile */
+    .max-w-md, .max-w-lg, .max-w-sm, .max-w-2xl { max-width: calc(100vw - 2rem) !important; }
+    .modal-overlay { padding: 1rem !important; align-items: flex-end !important; }
+    .modal-overlay > div { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; max-height: 92vh !important; }
+
+    /* Tablas / listas con overflow */
+    table { display: block; overflow-x: auto; }
+
+    /* KPI cards: fuentes más pequeñas */
+    #kpi-ingresos, #kpi-meta, #kpi-stock, #kpi-proveedores { font-size: 1.5rem !important; }
+
+    /* Cards de ventas: layout vertical */
+    .grid.grid-cols-1.md\:grid-cols-12 { grid-template-columns: 1fr !important; }
+    .md\:col-span-8, .md\:col-span-4 { grid-column: span 1 !important; }
+
+    /* Prevenir overflow horizontal */
+    main, section, .view { max-width: 100vw; overflow-x: hidden; }
   }
   .nav-item.active {
     background: white; color: #006d43; border-radius: 9999px;
@@ -569,10 +610,10 @@
 
     <!-- ── VISTA: DASHBOARD ── -->
     <div class="view active fade-in" id="view-dashboard">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-16">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               Bienvenido, <span class="text-primary italic" id="dashboard-name">...</span> 👋
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -656,10 +697,10 @@
 
     <!-- ── VISTA: FINANZAS ── -->
     <div class="view fade-in" id="view-finanzas">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-12">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               ¿Cuánto te queda <span class="text-primary italic">limpio</span> hoy?
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -722,10 +763,10 @@
 
     <!-- ── VISTA: STOCK VISUAL ── -->
     <div class="view fade-in" id="view-stock">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-12">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               Tu inventario, <span class="text-primary italic">de un vistazo</span>
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -778,10 +819,10 @@
 
     <!-- ── VISTA: VENTAS ── -->
     <div class="view fade-in" id="view-ventas">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
         <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               Tus ventas, <span class="text-primary italic">en tiempo real</span>
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body">Registra cada venta y lleva el control de tus ingresos.</p>
@@ -931,10 +972,10 @@
 
     <!-- ── VISTA: PROYECCIONES ── -->
     <div class="view fade-in" id="view-proyecciones">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-16">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               ¿A dónde vas <span class="text-primary italic">mañana</span>?
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -1010,10 +1051,10 @@
 
     <!-- ── VISTA: PROVEEDORES ── -->
     <div class="view fade-in" id="view-proveedores">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-12">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               Tus aliados <span class="text-primary italic">del negocio</span>
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -1043,10 +1084,10 @@
 
     <!-- ── VISTA: METAS ── -->
     <div class="view fade-in" id="view-metas">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-12">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               Tu norte, <span class="text-primary italic">siempre claro</span>
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -1078,10 +1119,10 @@
 
     <!-- ── VISTA: MI PLAN ── -->
     <div class="view fade-in" id="view-plan">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-16">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               Tu hoja de <span class="text-primary italic">ruta</span>
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
@@ -1163,7 +1204,7 @@
 
     <!-- ── VISTA: HERRAMIENTAS ── -->
     <div class="view fade-in" id="view-herramientas">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
         <section class="mb-16">
           <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight mb-4">
             Tu caja de <span class="text-primary italic">herramientas</span>
@@ -1262,10 +1303,10 @@
 
     <!-- ── VISTA: COMUNIDAD ── -->
     <div class="view fade-in" id="view-comunidad">
-      <div class="p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-16">
           <div class="max-w-2xl">
-            <h2 class="text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
+            <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               No navegas <span class="text-primary italic">solo</span>
             </h2>
             <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
