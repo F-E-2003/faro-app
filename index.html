@@ -697,57 +697,74 @@
 
     <!-- Modal: Registrar Venta -->
     <div id="modal-venta" class="modal-overlay hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-        <h3 class="font-headline font-bold text-xl mb-6">Registrar Venta</h3>
-        <div class="flex flex-col gap-4">
-          <!-- Buscador de producto -->
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Producto</label>
-            <div class="relative">
-              <input id="venta-producto-search" type="text" placeholder="Buscar producto del inventario..." autocomplete="off"
-                oninput="filtrarProductosVenta(this.value)"
-                onfocus="filtrarProductosVenta(this.value)"
-                class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
-              <div id="venta-producto-dropdown" class="hidden absolute z-50 w-full bg-white border border-outline-variant rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
-            </div>
-            <input type="hidden" id="venta-producto-id"/>
-            <input type="hidden" id="venta-producto-costo"/>
-            <input type="hidden" id="venta-producto-stock"/>
-            <p id="venta-stock-hint" class="text-xs text-slate-400 mt-1 hidden">Stock disponible: <span id="venta-stock-val" class="font-bold text-primary"></span></p>
+      <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[92vh] overflow-y-auto flex flex-col gap-5">
+        <h3 class="font-headline font-bold text-xl">Registrar Venta</h3>
+
+        <!-- Sección agregar ítem -->
+        <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col gap-3">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Agregar producto</p>
+          <!-- Buscador -->
+          <div class="relative">
+            <input id="venta-producto-search" type="text" placeholder="Buscar en inventario..." autocomplete="off"
+              oninput="filtrarProductosVenta(this.value)"
+              onfocus="filtrarProductosVenta(this.value)"
+              class="w-full border border-outline-variant rounded-xl px-4 py-2.5 outline-none focus:border-primary text-sm bg-white"/>
+            <div id="venta-producto-dropdown" class="hidden absolute z-50 w-full bg-white border border-outline-variant rounded-xl shadow-lg mt-1 max-h-44 overflow-y-auto"></div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
+          <input type="hidden" id="venta-producto-id"/>
+          <input type="hidden" id="venta-producto-costo"/>
+          <input type="hidden" id="venta-producto-stock"/>
+          <p id="venta-stock-hint" class="text-xs text-slate-400 -mt-1 hidden">Stock disponible: <span id="venta-stock-val" class="font-bold text-primary"></span></p>
+          <!-- Cantidad + Precio + Botón -->
+          <div class="flex gap-2 items-end">
+            <div class="flex-1">
               <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Cantidad</label>
-              <input id="venta-cantidad" type="number" min="1" value="1" oninput="calcVentaPreview()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+              <input id="venta-cantidad" type="number" min="1" value="1"
+                class="w-full border border-outline-variant rounded-xl px-3 py-2.5 outline-none focus:border-primary text-sm bg-white"/>
             </div>
-            <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Precio unitario</label>
-              <input id="venta-precio" type="number" min="0" step="1" placeholder="0" oninput="calcVentaPreview()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+            <div class="flex-1">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Precio unit.</label>
+              <input id="venta-precio" type="number" min="0" step="1" placeholder="0"
+                class="w-full border border-outline-variant rounded-xl px-3 py-2.5 outline-none focus:border-primary text-sm bg-white"/>
             </div>
+            <button onclick="agregarItemVenta()"
+              class="editorial-gradient text-white rounded-xl px-4 py-2.5 font-bold text-sm flex items-center gap-1 shrink-0 shadow-sm">
+              <span class="material-symbols-outlined text-base">add</span> Agregar
+            </button>
           </div>
+        </div>
+
+        <!-- Lista de ítems agregados -->
+        <div id="venta-items-list" class="hidden flex flex-col gap-2"></div>
+
+        <!-- Resumen total -->
+        <div id="venta-resumen" class="hidden bg-primary/5 rounded-xl px-4 py-3 text-sm">
+          <div class="flex justify-between"><span class="text-slate-500">Total:</span> <strong id="venta-resumen-total" class="text-primary text-base">$0</strong></div>
+          <div class="flex justify-between mt-1"><span class="text-slate-500">Ganancia estimada:</span> <strong id="venta-resumen-ganancia" class="text-on-surface">$0</strong></div>
+        </div>
+
+        <!-- Cliente + Fecha -->
+        <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Cliente (opcional)</label>
-            <input id="venta-cliente" type="text" placeholder="Nombre del cliente" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+            <input id="venta-cliente" type="text" placeholder="Consumidor Final" class="w-full border border-outline-variant rounded-xl px-4 py-2.5 outline-none focus:border-primary text-sm"/>
           </div>
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Fecha</label>
-            <input id="venta-fecha" type="date" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
-          </div>
-          <div id="venta-preview" class="bg-primary/5 rounded-xl px-4 py-3 text-sm hidden">
-            <div class="flex justify-between"><span class="text-slate-500">Total:</span> <strong id="venta-prev-total" class="text-primary">$0</strong></div>
-            <div class="flex justify-between mt-1"><span class="text-slate-500">Ganancia:</span> <strong id="venta-prev-ganancia" class="text-on-surface">$0</strong></div>
+            <input id="venta-fecha" type="date" class="w-full border border-outline-variant rounded-xl px-4 py-2.5 outline-none focus:border-primary text-sm"/>
           </div>
         </div>
-        <div class="flex gap-3 mt-6">
+
+        <div class="flex gap-3">
           <button onclick="closeModal('modal-venta')" class="flex-1 py-3 rounded-full border border-outline-variant text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
-          <button onclick="saveVenta()" class="flex-1 py-3 rounded-full editorial-gradient text-white font-bold shadow-sm">Guardar</button>
+          <button onclick="saveVenta()" class="flex-1 py-3 rounded-full editorial-gradient text-white font-bold shadow-sm">Guardar Venta</button>
         </div>
       </div>
     </div>
 
     <!-- Modal: Factura -->
     <div id="modal-factura" class="modal-overlay hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl" id="factura-content">
+      <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto" id="factura-content">
         <div class="flex items-center justify-between mb-1">
           <div class="w-10 h-10 editorial-gradient rounded-full flex items-center justify-center">
             <span class="material-symbols-outlined text-white text-lg">receipt_long</span>
@@ -762,14 +779,16 @@
         <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Fecha</span><span class="font-medium" id="fac-fecha"></span></div>
         <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Cliente</span><span class="font-medium" id="fac-cliente"></span></div>
         <div class="border-t border-dashed border-outline-variant my-3"></div>
-        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Producto</span><span class="font-medium text-right max-w-[60%]" id="fac-producto"></span></div>
-        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Cantidad</span><span class="font-medium" id="fac-cantidad"></span></div>
-        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Precio unitario</span><span class="font-medium" id="fac-precio"></span></div>
+        <!-- Tabla de ítems -->
+        <div class="flex justify-between text-xs font-bold text-slate-400 uppercase mb-2 px-1">
+          <span class="flex-1">Producto</span><span class="w-8 text-center">Cant</span><span class="w-20 text-right">Subtotal</span>
+        </div>
+        <div id="fac-items" class="flex flex-col gap-1.5 mb-3"></div>
         <div class="border-t border-outline-variant my-3"></div>
         <div class="flex justify-between text-base font-bold"><span class="text-on-surface">TOTAL</span><span class="text-primary text-lg" id="fac-total"></span></div>
         <div class="border-t border-dashed border-outline-variant my-3"></div>
         <p class="text-center text-xs text-slate-400 mb-5">¡Gracias por tu compra!</p>
-        <div class="flex gap-3">
+        <div class="flex gap-3 no-print">
           <button onclick="closeModal('modal-factura')" class="flex-1 py-3 rounded-full border border-outline-variant text-slate-600 font-bold hover:bg-slate-50 transition-colors text-sm">Cerrar</button>
           <button onclick="imprimirFactura()" class="flex-1 py-3 rounded-full editorial-gradient text-white font-bold shadow-sm text-sm flex items-center justify-center gap-2">
             <span class="material-symbols-outlined text-sm">print</span> Imprimir
@@ -1836,36 +1855,40 @@ async function loadVentas() {
   }).join('');
 }
 
+let _ventaItems = []; // carrito de ítems de la venta actual
+
 async function openVentaModal() {
-  // Cargar productos disponibles
   const prods = await apiFetch('/productos');
   _productosCache = (prods || []).filter(p => Number(p.stock) > 0);
-  // Reset search UI
-  const searchEl = document.getElementById('venta-producto-search');
-  if (searchEl) searchEl.value = '';
+  _ventaItems = [];
+  _resetItemForm();
+  document.getElementById('venta-cliente').value = '';
+  const fd = document.getElementById('venta-fecha');
+  if (fd) fd.value = new Date().toISOString().split('T')[0];
+  _renderVentaItems();
+  openModal('modal-venta');
+}
+
+function _resetItemForm() {
+  document.getElementById('venta-producto-search').value = '';
   document.getElementById('venta-producto-id').value = '';
   document.getElementById('venta-producto-costo').value = '';
   document.getElementById('venta-producto-stock').value = '';
+  document.getElementById('venta-cantidad').value = 1;
+  document.getElementById('venta-cantidad').removeAttribute('max');
+  document.getElementById('venta-precio').value = '';
   document.getElementById('venta-stock-hint')?.classList.add('hidden');
   document.getElementById('venta-producto-dropdown')?.classList.add('hidden');
-  // Reset fields
-  document.getElementById('venta-cantidad').value = 1;
-  document.getElementById('venta-precio').value = '';
-  document.getElementById('venta-cliente').value = '';
-  // Fecha default: hoy
-  const fd = document.getElementById('venta-fecha');
-  if (fd) fd.value = new Date().toISOString().split('T')[0];
-  document.getElementById('venta-preview')?.classList.add('hidden');
-  openModal('modal-venta');
 }
 
 function filtrarProductosVenta(query) {
   const dropdown = document.getElementById('venta-producto-dropdown');
   if (!dropdown) return;
   const q = (query || '').toLowerCase().trim();
-  const resultados = q
-    ? _productosCache.filter(p => p.nombre.toLowerCase().includes(q))
-    : _productosCache;
+  // Excluir productos ya en el carrito
+  const enCarrito = _ventaItems.map(i => i.producto_id).filter(Boolean);
+  const disponibles = _productosCache.filter(p => !enCarrito.includes(p.id));
+  const resultados = q ? disponibles.filter(p => p.nombre.toLowerCase().includes(q)) : disponibles;
   if (resultados.length === 0) {
     dropdown.innerHTML = `<div class="px-4 py-3 text-sm text-slate-400">Sin resultados</div>`;
   } else {
@@ -1889,12 +1912,10 @@ function seleccionarProductoVenta(id) {
   document.getElementById('venta-precio').value = p.precio_venta || '';
   document.getElementById('venta-stock-val').textContent = p.stock;
   document.getElementById('venta-stock-hint')?.classList.remove('hidden');
-  // Max cantidad = stock disponible
   const cantEl = document.getElementById('venta-cantidad');
   cantEl.max = p.stock;
-  cantEl.value = Math.min(parseInt(cantEl.value) || 1, p.stock);
+  cantEl.value = 1;
   document.getElementById('venta-producto-dropdown')?.classList.add('hidden');
-  calcVentaPreview();
 }
 
 // Cerrar dropdown al hacer clic fuera
@@ -1905,59 +1926,102 @@ document.addEventListener('click', function(e) {
   }
 });
 
-function calcVentaPreview() {
-  const cant   = parseFloat(document.getElementById('venta-cantidad')?.value) || 0;
-  const precio = parseFloat(document.getElementById('venta-precio')?.value) || 0;
-  const costo  = parseFloat(document.getElementById('venta-producto-costo')?.value) || 0;
-  const preview = document.getElementById('venta-preview');
-  if (!cant || !precio) { preview?.classList.add('hidden'); return; }
-  const total    = cant * precio;
-  const ganancia = cant * (precio - costo);
-  preview?.classList.remove('hidden');
-  const el1 = document.getElementById('venta-prev-total');
-  const el2 = document.getElementById('venta-prev-ganancia');
-  if (el1) el1.textContent = cop(total);
-  if (el2) el2.textContent = cop(ganancia);
-}
-
-async function saveVenta() {
+function agregarItemVenta() {
   const prodId   = document.getElementById('venta-producto-id')?.value;
   const prodNom  = document.getElementById('venta-producto-search')?.value.trim();
   const cantidad = parseInt(document.getElementById('venta-cantidad')?.value);
   const precio   = parseFloat(document.getElementById('venta-precio')?.value);
-  const costo_unitario = parseFloat(document.getElementById('venta-producto-costo')?.value) || 0;
+  const costo    = parseFloat(document.getElementById('venta-producto-costo')?.value) || 0;
   const stock    = parseInt(document.getElementById('venta-producto-stock')?.value) || 0;
-  const cliente  = document.getElementById('venta-cliente')?.value.trim();
-  const fecha    = document.getElementById('venta-fecha')?.value;
 
   if (!prodNom) { alert('Busca y selecciona un producto'); return; }
   if (!cantidad || cantidad < 1) { alert('La cantidad debe ser al menos 1'); return; }
-  if (prodId && stock > 0 && cantidad > stock) { alert(`Solo hay ${stock} unidades en stock`); return; }
-  if (!precio || precio <= 0) { alert('Ingresa un precio válido'); return; }
+  if (prodId && stock > 0 && cantidad > stock) { alert(`Solo hay ${stock} unidades disponibles en stock`); return; }
+  if (!precio || precio <= 0) { alert('Ingresa un precio unitario válido'); return; }
 
-  const body = JSON.stringify({
+  _ventaItems.push({
     producto_id: prodId ? parseInt(prodId) : null,
-    producto_nombre: prodNom,
-    cantidad, precio_unitario: precio, costo_unitario, cliente, fecha
+    nombre: prodNom,
+    cantidad,
+    precio_unitario: precio,
+    costo_unitario: costo,
+    stock
   });
-  const res = await apiFetch('/ventas', { method: 'POST', body });
-  if (res && !res.error) {
-    closeModal('modal-venta');
-    loadVentas();
-    loadProductos();
-    loadFinanzas();
-    loadDashboard();
-    // Mostrar factura
-    mostrarFactura({
-      numero: res.id || Date.now(),
-      producto_nombre: prodNom,
-      cantidad,
-      precio_unitario: precio,
-      total: cantidad * precio,
-      cliente: cliente || 'Consumidor Final',
-      fecha: fecha || new Date().toISOString().split('T')[0]
-    });
+  _renderVentaItems();
+  _resetItemForm();
+}
+
+function removeItemVenta(idx) {
+  _ventaItems.splice(idx, 1);
+  _renderVentaItems();
+}
+
+function _renderVentaItems() {
+  const lista   = document.getElementById('venta-items-list');
+  const resumen = document.getElementById('venta-resumen');
+  if (!lista) return;
+  if (_ventaItems.length === 0) {
+    lista.classList.add('hidden');
+    resumen?.classList.add('hidden');
+    return;
   }
+  lista.classList.remove('hidden');
+  lista.innerHTML = `
+    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Ítems (${_ventaItems.length})</p>
+    ${_ventaItems.map((it, i) => `
+      <div class="flex items-center justify-between gap-2 bg-surface-container-low rounded-xl px-4 py-2.5">
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-sm text-on-surface truncate">${escHtml(it.nombre)}</p>
+          <p class="text-xs text-slate-400">${it.cantidad} × ${cop(it.precio_unitario)} = <strong class="text-primary">${cop(it.cantidad * it.precio_unitario)}</strong></p>
+        </div>
+        <button onclick="removeItemVenta(${i})" class="text-slate-300 hover:text-error transition-colors shrink-0">
+          <span class="material-symbols-outlined text-lg">delete</span>
+        </button>
+      </div>`).join('')}`;
+
+  const total    = _ventaItems.reduce((s, i) => s + i.cantidad * i.precio_unitario, 0);
+  const ganancia = _ventaItems.reduce((s, i) => s + i.cantidad * (i.precio_unitario - i.costo_unitario), 0);
+  resumen?.classList.remove('hidden');
+  document.getElementById('venta-resumen-total').textContent    = cop(total);
+  document.getElementById('venta-resumen-ganancia').textContent = cop(ganancia);
+}
+
+function calcVentaPreview() {} // ya no se usa; se mantiene para evitar errores en oninput legados
+
+async function saveVenta() {
+  if (_ventaItems.length === 0) { alert('Agrega al menos un producto a la venta'); return; }
+  const cliente = document.getElementById('venta-cliente')?.value.trim();
+  const fecha   = document.getElementById('venta-fecha')?.value;
+
+  const resultados = [];
+  for (const it of _ventaItems) {
+    const body = JSON.stringify({
+      producto_id: it.producto_id,
+      producto_nombre: it.nombre,
+      cantidad: it.cantidad,
+      precio_unitario: it.precio_unitario,
+      costo_unitario: it.costo_unitario,
+      cliente, fecha
+    });
+    const res = await apiFetch('/ventas', { method: 'POST', body });
+    if (!res || res.error) { alert(`Error al guardar "${it.nombre}": ${res?.error || 'Error desconocido'}`); return; }
+    resultados.push({ ...it, id: res.id });
+  }
+
+  closeModal('modal-venta');
+  loadVentas();
+  loadProductos();
+  loadFinanzas();
+  loadDashboard();
+
+  const totalFactura = resultados.reduce((s, i) => s + i.cantidad * i.precio_unitario, 0);
+  mostrarFactura({
+    numero: resultados[0].id,
+    items: resultados,
+    total: totalFactura,
+    cliente: cliente || 'Consumidor Final',
+    fecha: fecha || new Date().toISOString().split('T')[0]
+  });
 }
 
 async function deleteVenta(id) {
@@ -1972,21 +2036,26 @@ function mostrarFactura(v) {
   const [y, m, d] = (v.fecha || '').split('-');
   document.getElementById('fac-fecha').textContent = d && m && y ? `${d}/${m}/${y}` : v.fecha;
   document.getElementById('fac-cliente').textContent = v.cliente || 'Consumidor Final';
-  document.getElementById('fac-producto').textContent = v.producto_nombre;
-  document.getElementById('fac-cantidad').textContent = v.cantidad;
-  document.getElementById('fac-precio').textContent = cop(v.precio_unitario);
   document.getElementById('fac-total').textContent = cop(v.total);
+  // Ítems
+  const items = v.items || [{ nombre: v.producto_nombre, cantidad: v.cantidad, precio_unitario: v.precio_unitario }];
+  document.getElementById('fac-items').innerHTML = items.map(it => `
+    <div class="flex items-start gap-1 text-sm px-1">
+      <span class="flex-1 text-on-surface">${escHtml(it.nombre)}</span>
+      <span class="w-8 text-center text-slate-500">${it.cantidad}</span>
+      <span class="w-20 text-right font-medium text-primary">${cop(it.cantidad * it.precio_unitario)}</span>
+    </div>`).join('');
   openModal('modal-factura');
 }
 
 function imprimirFactura() {
   const content = document.getElementById('factura-content').innerHTML;
-  const win = window.open('', '_blank', 'width=400,height=600');
+  const win = window.open('', '_blank', 'width=420,height=650');
   win.document.write(`<!DOCTYPE html><html><head>
     <meta charset="utf-8"/>
     <title>Factura Faro</title>
     <style>
-      body { font-family: 'Be Vietnam Pro', Arial, sans-serif; padding: 24px; max-width: 360px; margin: 0 auto; color: #161d18; }
+      body { font-family: Arial, sans-serif; padding: 24px; max-width: 380px; margin: 0 auto; color: #161d18; }
       .editorial-gradient { background: linear-gradient(135deg,#006d43,#00a86b); }
       .text-primary { color: #006d43; }
       .text-slate-400 { color: #94a3b8; }
@@ -1994,19 +2063,28 @@ function imprimirFactura() {
       .text-on-surface { color: #161d18; }
       .rounded-full { border-radius: 9999px; }
       .w-10 { width: 40px; } .h-10 { height: 40px; }
-      .flex { display: flex; } .items-center { align-items: center; } .justify-center { justify-content: center; }
+      .flex { display: flex; } .flex-1 { flex: 1; }
+      .items-center { align-items: center; } .items-start { align-items: flex-start; }
+      .justify-center { justify-content: center; }
       .justify-between { justify-content: space-between; }
       .text-white { color: #fff; }
       .font-mono { font-family: monospace; }
-      .my-4 { margin: 16px 0; } .my-3 { margin: 12px 0; } .mb-1 { margin-bottom: 4px; } .mb-5 { margin-bottom: 20px; }
+      .my-4 { margin: 16px 0; } .my-3 { margin: 12px 0; }
+      .mb-1 { margin-bottom: 4px; } .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-5 { margin-bottom: 20px; }
+      .gap-1 { gap: 4px; } .gap-1\\.5 { gap: 6px; } .px-1 { padding: 0 4px; }
       .text-center { text-align: center; }
       .border-t { border-top: 1px solid #bccabe; }
       .border-dashed { border-style: dashed; }
-      .text-sm { font-size: 14px; } .text-xs { font-size: 12px; } .text-base { font-size: 16px; } .text-lg { font-size: 18px; } .text-xl { font-size: 20px; }
+      .text-sm { font-size: 14px; } .text-xs { font-size: 12px; }
+      .text-base { font-size: 16px; } .text-lg { font-size: 18px; } .text-xl { font-size: 20px; }
       .font-bold { font-weight: 700; } .font-medium { font-weight: 500; } .font-extrabold { font-weight: 800; }
-      .text-right { text-align: right; } .max-w-\\[60\\%\\] { max-width: 60%; }
-      button { display: none; }
-      .material-symbols-outlined { display: none; }
+      .text-right { text-align: right; } .w-8 { width: 32px; } .w-20 { width: 80px; }
+      .text-center { text-align: center; }
+      .uppercase { text-transform: uppercase; }
+      .tracking-widest { letter-spacing: 0.1em; }
+      .no-print, button { display: none !important; }
+      .material-symbols-outlined { display: none !important; }
+      .flex-col { flex-direction: column; }
     </style>
   </head><body>${content}</body></html>`);
   win.document.close();
