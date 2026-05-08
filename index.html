@@ -2406,20 +2406,31 @@ async function loadMetas() {
         <button onclick="openModal('modal-meta')" class="bg-primary text-white px-6 py-2 rounded-full font-bold text-sm">Crear mi primera meta</button>
       </div>`;
     } else {
-      const pct = Math.min(100, Math.round((Number(principal.monto_actual) / Number(principal.monto_objetivo)) * 100));
-      const falta = Math.max(0, Number(principal.monto_objetivo) - Number(principal.monto_actual));
+      const actual = Number(principal.monto_actual);
+      const objetivo = Number(principal.monto_objetivo);
+      const pct = Math.min(100, Math.round((actual / objetivo) * 100));
+      const cumplida = actual >= objetivo;
+      const falta = Math.max(0, objetivo - actual);
+      const exceso = Math.max(0, actual - objetivo);
       mpEl.innerHTML = `
-        <p class="text-xs font-bold opacity-60 uppercase tracking-widest mb-2">Meta Principal</p>
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs font-bold opacity-60 uppercase tracking-widest">Meta Principal</p>
+          ${cumplida ? `<span class="flex items-center gap-1 text-xs font-bold bg-primary-fixed-dim/20 text-primary-fixed-dim px-3 py-1 rounded-full"><span class="material-symbols-outlined text-sm">emoji_events</span> ¡Meta cumplida!</span>` : ''}
+        </div>
         <h3 class="text-3xl font-headline font-bold mb-2">${escHtml(principal.titulo)}</h3>
-        <div class="flex items-baseline gap-4 my-6">
-          <span class="text-5xl font-headline font-black text-primary-fixed-dim">${cop(principal.monto_actual)}</span>
-          <span class="text-lg opacity-60">de ${cop(principal.monto_objetivo)}</span>
+        <div class="flex items-baseline gap-4 my-4">
+          <span class="text-5xl font-headline font-black text-primary-fixed-dim">${cop(actual)}</span>
+          <span class="text-lg opacity-60">de ${cop(objetivo)}</span>
         </div>
         <div class="h-4 bg-white/10 rounded-full overflow-hidden mb-3">
-          <div class="h-full bg-primary-fixed-dim rounded-full transition-all" style="width:${pct}%"></div>
+          <div class="h-full rounded-full transition-all ${cumplida ? 'bg-yellow-300' : 'bg-primary-fixed-dim'}" style="width:${pct}%"></div>
         </div>
         <div class="flex justify-between items-center">
-          <p class="text-sm opacity-70">${pct}% completado · Faltan ${cop(falta)}</p>
+          <p class="text-sm opacity-70">
+            ${cumplida
+              ? `✓ 100% · Superada por ${cop(exceso)}`
+              : `${pct}% completado · Faltan ${cop(falta)}`}
+          </p>
           <button onclick="deleteMeta(${principal.id})" class="text-white/40 hover:text-red-300 transition-colors">
             <span class="material-symbols-outlined text-sm">delete</span>
           </button>
@@ -2430,16 +2441,21 @@ async function loadMetas() {
   if (!metasEl) return;
   const colors = [['text-primary','bg-primary/10','bg-primary'],['text-tertiary','bg-tertiary/10','bg-tertiary'],['text-secondary','bg-secondary/10','bg-secondary']];
   metasEl.innerHTML = (resto.length === 0 ? '' : resto.map((m, i) => {
-    const pct = Math.min(100, Math.round((Number(m.monto_actual) / Number(m.monto_objetivo)) * 100));
+    const actual = Number(m.monto_actual);
+    const objetivo = Number(m.monto_objetivo);
+    const pct = Math.min(100, Math.round((actual / objetivo) * 100));
+    const cumplida = actual >= objetivo;
     const [tc, bgc, barc] = colors[i % 3];
     return `<div class="bg-surface-container-lowest rounded-lg p-6 shadow-sm">
       <div class="flex items-center justify-between mb-3">
         <p class="font-headline font-bold text-sm">${escHtml(m.titulo)}</p>
-        <span class="text-xs font-bold ${tc} ${bgc} px-2 py-1 rounded-full">${pct}%</span>
+        <span class="text-xs font-bold ${cumplida ? 'text-primary bg-primary/10' : tc+' '+bgc} px-2 py-1 rounded-full flex items-center gap-1">
+          ${cumplida ? '<span class="material-symbols-outlined text-xs">emoji_events</span>' : ''}${pct}%
+        </span>
       </div>
-      <p class="text-2xl font-headline font-black text-on-surface mb-3">${cop(m.monto_actual)} / ${cop(m.monto_objetivo)}</p>
+      <p class="text-2xl font-headline font-black text-on-surface mb-3">${cop(actual)} / ${cop(objetivo)}</p>
       <div class="h-2 bg-surface-container rounded-full overflow-hidden">
-        <div class="h-full ${barc} rounded-full" style="width:${pct}%"></div>
+        <div class="h-full ${cumplida ? 'bg-primary' : barc} rounded-full" style="width:${pct}%"></div>
       </div>
     </div>`;
   }).join('')) + `<div class="border-2 border-dashed border-outline-variant rounded-lg p-4 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all" onclick="openModal('modal-meta')">
