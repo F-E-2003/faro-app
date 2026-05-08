@@ -697,14 +697,8 @@ app.post('/api/ventas', auth, async (req, res) => {
       [uid, 'ingreso', total, descFinanza, 'Ventas', fechaVenta]
     );
 
-    // Sincronizar meta principal: monto_actual = suma total de todas las ventas del usuario
-    const [{ total_ventas }] = await q(
-      `SELECT COALESCE(SUM(total), 0) AS total_ventas FROM ventas WHERE usuario_id=?`, [uid]
-    );
-    await q(
-      `UPDATE metas SET monto_actual=? WHERE usuario_id=? AND es_principal=1`,
-      [parseFloat(total_ventas), uid]
-    );
+    // Sincronizar meta principal con total real de ventas
+    await syncMetaPrincipal(uid);
 
     res.json({ id: r.insertId, total, ganancia });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -735,13 +729,7 @@ app.delete('/api/ventas/:id', auth, async (req, res) => {
     await q(`DELETE FROM ventas WHERE id=? AND usuario_id=?`, [req.params.id, req.user.id]);
 
     // Sincronizar meta principal tras eliminar la venta
-    const [{ total_ventas }] = await q(
-      `SELECT COALESCE(SUM(total), 0) AS total_ventas FROM ventas WHERE usuario_id=?`, [req.user.id]
-    );
-    await q(
-      `UPDATE metas SET monto_actual=? WHERE usuario_id=? AND es_principal=1`,
-      [parseFloat(total_ventas), req.user.id]
-    );
+    await syncMetaPrincipal(req.user.id);
 
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -766,19 +754,19 @@ app.delete('/api/proveedores/:id', auth, async (req, res) => {
   catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Helper: sincroniza la meta principal (o primera disponible) con el total de ventas
+async function syncMetaPrincipal(uid) {
+  const metas = await q(`SELECT id FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC LIMIT 1`, [uid]);
+  if (!metas.length) return;
+  const [{ total_ventas }] = await q(`SELECT COALESCE(SUM(total),0) AS total_ventas FROM ventas WHERE usuario_id=?`, [uid]);
+  await q(`UPDATE metas SET monto_actual=? WHERE id=?`, [parseFloat(total_ventas), metas[0].id]);
+}
+
 // ── METAS ─────────────────────────────────────────────────────────────────────
 app.get('/api/metas', auth, async (req, res) => {
   try {
-    const uid = req.user.id;
-    // Sincronizar meta principal con total real de ventas
-    const [{ total_ventas }] = await q(
-      `SELECT COALESCE(SUM(total), 0) AS total_ventas FROM ventas WHERE usuario_id=?`, [uid]
-    );
-    await q(
-      `UPDATE metas SET monto_actual=? WHERE usuario_id=? AND es_principal=1`,
-      [parseFloat(total_ventas), uid]
-    );
-    res.json(await q(`SELECT * FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC`, [uid]));
+    await syncMetaPrincipal(req.user.id);
+    res.json(await q(`SELECT * FROM metas WHERE usuario_id=? ORDER BY es_principal DESC, created_at ASC`, [req.user.id]));
   }
   catch (err) { res.status(500).json({ error: err.message }); }
 });
