@@ -2160,6 +2160,7 @@ async function saveVenta() {
   loadProductos();
   loadFinanzas();
   loadDashboard();
+  loadMetas();
 
   const totalFactura = resultados.reduce((s, i) => s + i.cantidad * i.precio_unitario, 0);
   mostrarFactura({
@@ -2174,7 +2175,7 @@ async function saveVenta() {
 async function deleteVenta(id) {
   if (!confirm('¿Eliminar esta venta? El stock del producto será restaurado.')) return;
   const res = await apiFetch(`/ventas/${id}`, { method: 'DELETE' });
-  if (res?.ok) { loadVentas(); loadProductos(); loadFinanzas(); loadDashboard(); }
+  if (res?.ok) { loadVentas(); loadProductos(); loadFinanzas(); loadDashboard(); loadMetas(); }
 }
 
 function mostrarFactura(v) {
