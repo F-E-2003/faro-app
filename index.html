@@ -135,8 +135,140 @@
       <input id="reg-email" type="email" placeholder="Correo electrónico" class="w-full bg-surface-container-low rounded-xl px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary outline-none"/>
       <input id="reg-password" type="password" placeholder="Contraseña (mín. 6 caracteres)" class="w-full bg-surface-container-low rounded-xl px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary outline-none"/>
       <input id="reg-negocio" type="text" placeholder="Nombre de tu negocio (opcional)" class="w-full bg-surface-container-low rounded-xl px-4 py-3 text-sm border-none focus:ring-2 focus:ring-primary outline-none"/>
+      <!-- Checkbox términos -->
+      <label class="flex items-start gap-3 cursor-pointer select-none">
+        <div class="relative mt-0.5 shrink-0">
+          <input id="reg-terminos" type="checkbox" class="sr-only peer"/>
+          <div class="w-5 h-5 rounded-md border-2 border-outline-variant bg-white peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-sm hidden peer-checked:hidden" style="font-size:14px">check</span>
+          </div>
+          <span class="material-symbols-outlined absolute top-0.5 left-0.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" style="font-size:14px">check</span>
+        </div>
+        <span class="text-xs text-slate-500 leading-relaxed">
+          He leído y acepto los
+          <button type="button" onclick="abrirTerminos()" class="text-primary font-bold underline underline-offset-2 hover:text-primary/80 transition-colors">Términos y Condiciones</button>
+          y la
+          <button type="button" onclick="abrirTerminos()" class="text-primary font-bold underline underline-offset-2 hover:text-primary/80 transition-colors">Política de Privacidad</button>
+          de Faro App
+        </span>
+      </label>
       <p id="reg-error" class="text-error text-xs min-h-[1rem]"></p>
-      <button onclick="doRegister()" class="w-full editorial-gradient text-white py-3 rounded-full font-bold text-sm hover:opacity-90 transition-opacity">Crear cuenta gratis</button>
+      <button onclick="doRegister()" class="w-full editorial-gradient text-white py-3 rounded-full font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">Crear cuenta gratis</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Términos y Condiciones -->
+<div id="modal-terminos" class="hidden fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-outline-variant shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 editorial-gradient rounded-xl flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-white text-lg">gavel</span>
+        </div>
+        <div>
+          <h2 class="font-headline font-bold text-lg leading-tight">Términos y Condiciones</h2>
+          <p class="text-xs text-slate-400">Faro App · Versión 1.0 · Mayo 2025</p>
+        </div>
+      </div>
+      <button onclick="cerrarTerminos()" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="overflow-y-auto px-6 py-5 text-sm text-slate-600 leading-relaxed flex flex-col gap-5">
+
+      <div class="bg-primary/5 rounded-xl p-4 text-xs text-primary font-medium">
+        Al registrarte en Faro App aceptas los presentes Términos y Condiciones y la Política de Privacidad. Si no estás de acuerdo, por favor abstente de usar la plataforma.
+      </div>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">1. Identificación del responsable</h3>
+        <p><strong>Faro App</strong> es una plataforma digital de gestión empresarial para pequeños y medianos negocios, operada en la República de Colombia. Contacto: <span class="text-primary">hola@faro.app</span></p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">2. Objeto del servicio</h3>
+        <p>Faro App ofrece herramientas digitales para la administración de finanzas, inventario, ventas, proyecciones y comunicación con asistente inteligente. El acceso a funcionalidades avanzadas está sujeto a la adquisición de un plan de suscripción.</p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">3. Registro y seguridad de la cuenta</h3>
+        <ul class="list-disc pl-5 flex flex-col gap-1">
+          <li>El usuario debe proporcionar información veraz y actualizada al momento del registro.</li>
+          <li>Es responsabilidad exclusiva del usuario mantener la confidencialidad de sus credenciales de acceso.</li>
+          <li>Faro App se reserva el derecho de suspender cuentas con información falsa o que infrinjan estos términos.</li>
+          <li>Cada cuenta es de uso personal e intransferible.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">4. Planes y pagos</h3>
+        <ul class="list-disc pl-5 flex flex-col gap-1">
+          <li>El plan de suscripción se cobra de acuerdo con las tarifas vigentes publicadas en la plataforma.</li>
+          <li>Los pagos no son reembolsables salvo falla técnica imputable a Faro App, conforme a la <strong>Ley 1480 de 2011</strong> (Estatuto del Consumidor).</li>
+          <li>Faro App podrá modificar precios con previo aviso de al menos 30 días al correo registrado.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">5. Propiedad intelectual</h3>
+        <p>Todo el contenido de la plataforma (diseño, código, marca, textos, imágenes) es propiedad de Faro App y está protegido por la <strong>Decisión Andina 351 de 1993</strong> y la <strong>Ley 23 de 1982</strong> sobre derechos de autor. Queda prohibida su reproducción total o parcial sin autorización escrita.</p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">6. Uso aceptable</h3>
+        <p>El usuario se compromete a no usar Faro App para:</p>
+        <ul class="list-disc pl-5 flex flex-col gap-1 mt-1">
+          <li>Actividades ilegales o contrarias al ordenamiento jurídico colombiano.</li>
+          <li>Cargar contenido malicioso, ofensivo o que vulnere derechos de terceros.</li>
+          <li>Intentar acceder a cuentas ajenas o vulnerar la seguridad del sistema.</li>
+          <li>Actividades de lavado de activos o financiación del terrorismo, prohibidas por la <strong>Ley 599 de 2000</strong> y normas SARLAFT.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">7. Limitación de responsabilidad</h3>
+        <p>Faro App no garantiza disponibilidad ininterrumpida del servicio. Las proyecciones y análisis generados son orientativos y no constituyen asesoría financiera, contable ni jurídica. El usuario asume plena responsabilidad sobre las decisiones tomadas con base en la información de la plataforma.</p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">8. Política de privacidad y tratamiento de datos personales</h3>
+        <p class="mb-2">En cumplimiento de la <strong>Ley Estatutaria 1581 de 2012</strong> y el <strong>Decreto Reglamentario 1377 de 2013</strong> sobre Protección de Datos Personales:</p>
+        <ul class="list-disc pl-5 flex flex-col gap-1">
+          <li><strong>Responsable:</strong> Faro App — hola@faro.app</li>
+          <li><strong>Datos recopilados:</strong> nombre, correo electrónico, nombre del negocio, datos financieros y de inventario que el usuario ingrese voluntariamente.</li>
+          <li><strong>Finalidad:</strong> prestar el servicio, mejorar la plataforma, enviar comunicaciones relacionadas con la cuenta y actualizaciones del servicio.</li>
+          <li><strong>Derechos del titular:</strong> conocer, actualizar, rectificar y suprimir sus datos, revocar la autorización y presentar quejas ante la <strong>Superintendencia de Industria y Comercio (SIC)</strong>.</li>
+          <li><strong>Transferencia:</strong> los datos no serán vendidos ni compartidos con terceros sin consentimiento expreso, salvo obligación legal.</li>
+          <li><strong>Seguridad:</strong> Faro App implementa medidas técnicas y organizativas para proteger la información contra acceso no autorizado, pérdida o alteración.</li>
+          <li><strong>Retención:</strong> los datos se conservan mientras la cuenta esté activa o según lo exija la ley.</li>
+        </ul>
+        <p class="mt-2">Para ejercer sus derechos puede escribir a <span class="text-primary font-medium">hola@faro.app</span>.</p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">9. Menores de edad</h3>
+        <p>Faro App está dirigida exclusivamente a mayores de 18 años o personas habilitadas para ejercer el comercio conforme al <strong>Código de Comercio colombiano (Decreto 410 de 1971)</strong>. Si se detecta el registro de un menor, la cuenta será eliminada.</p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">10. Modificaciones</h3>
+        <p>Faro App podrá actualizar estos términos en cualquier momento. Los cambios sustanciales serán notificados con al menos 15 días de anticipación al correo registrado. El uso continuo de la plataforma tras la notificación implica aceptación.</p>
+      </section>
+
+      <section>
+        <h3 class="font-bold text-on-surface text-base mb-2">11. Ley aplicable y jurisdicción</h3>
+        <p>Estos términos se rigen por las leyes de la <strong>República de Colombia</strong>. Cualquier controversia será resuelta ante los jueces competentes de Colombia, sin perjuicio de los mecanismos alternativos de solución de conflictos previstos en la <strong>Ley 1563 de 2012</strong>.</p>
+      </section>
+
+      <div class="text-xs text-slate-400 border-t border-outline-variant pt-4">
+        Última actualización: Mayo de 2025 · Faro App · hola@faro.app
+      </div>
+    </div>
+    <div class="px-6 pb-6 pt-4 border-t border-outline-variant shrink-0">
+      <button onclick="aceptarTerminosDesdeModal()" class="w-full editorial-gradient text-white py-3 rounded-full font-bold text-sm hover:opacity-90 transition-opacity">
+        He leído y acepto los Términos y Condiciones
+      </button>
     </div>
   </div>
 </div>
@@ -1670,6 +1802,17 @@ async function doLogin() {
   } catch (e) { errEl.textContent = e.message; }
 }
 
+function abrirTerminos() {
+  document.getElementById('modal-terminos').classList.remove('hidden');
+}
+function cerrarTerminos() {
+  document.getElementById('modal-terminos').classList.add('hidden');
+}
+function aceptarTerminosDesdeModal() {
+  document.getElementById('reg-terminos').checked = true;
+  cerrarTerminos();
+}
+
 async function doRegister() {
   const nombre = document.getElementById('reg-nombre').value.trim();
   const email = document.getElementById('reg-email').value.trim();
@@ -1679,6 +1822,10 @@ async function doRegister() {
   errEl.textContent = '';
   if (!nombre || !email || !password) { errEl.textContent = 'Completa nombre, email y contraseña'; return; }
   if (password.length < 6) { errEl.textContent = 'La contraseña debe tener al menos 6 caracteres'; return; }
+  if (!document.getElementById('reg-terminos').checked) {
+    errEl.textContent = 'Debes aceptar los Términos y Condiciones para continuar';
+    return;
+  }
   try {
     const res = await fetch(`${API_URL}/auth/register`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
