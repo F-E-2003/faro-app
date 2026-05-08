@@ -698,17 +698,22 @@
     <!-- Modal: Registrar Venta -->
     <div id="modal-venta" class="modal-overlay hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-        <h3 class="font-headline font-bold text-xl mb-6" id="modal-venta-title">Registrar Venta</h3>
+        <h3 class="font-headline font-bold text-xl mb-6">Registrar Venta</h3>
         <div class="flex flex-col gap-4">
+          <!-- Buscador de producto -->
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Producto</label>
-            <select id="venta-producto" onchange="onVentaProductoChange()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm">
-              <option value="">— Selecciona un producto —</option>
-            </select>
-          </div>
-          <div id="venta-manual-nombre-wrap" class="hidden">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Nombre del producto</label>
-            <input id="venta-manual-nombre" type="text" placeholder="Ej: Café especial" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+            <div class="relative">
+              <input id="venta-producto-search" type="text" placeholder="Buscar producto del inventario..." autocomplete="off"
+                oninput="filtrarProductosVenta(this.value)"
+                onfocus="filtrarProductosVenta(this.value)"
+                class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+              <div id="venta-producto-dropdown" class="hidden absolute z-50 w-full bg-white border border-outline-variant rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto"></div>
+            </div>
+            <input type="hidden" id="venta-producto-id"/>
+            <input type="hidden" id="venta-producto-costo"/>
+            <input type="hidden" id="venta-producto-stock"/>
+            <p id="venta-stock-hint" class="text-xs text-slate-400 mt-1 hidden">Stock disponible: <span id="venta-stock-val" class="font-bold text-primary"></span></p>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -717,7 +722,7 @@
             </div>
             <div>
               <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Precio unitario</label>
-              <input id="venta-precio" type="number" min="0" step="0.01" placeholder="0" oninput="calcVentaPreview()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
+              <input id="venta-precio" type="number" min="0" step="1" placeholder="0" oninput="calcVentaPreview()" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
             </div>
           </div>
           <div>
@@ -728,7 +733,6 @@
             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1 block">Fecha</label>
             <input id="venta-fecha" type="date" class="w-full border border-outline-variant rounded-xl px-4 py-3 outline-none focus:border-primary text-sm"/>
           </div>
-          <!-- Preview total -->
           <div id="venta-preview" class="bg-primary/5 rounded-xl px-4 py-3 text-sm hidden">
             <div class="flex justify-between"><span class="text-slate-500">Total:</span> <strong id="venta-prev-total" class="text-primary">$0</strong></div>
             <div class="flex justify-between mt-1"><span class="text-slate-500">Ganancia:</span> <strong id="venta-prev-ganancia" class="text-on-surface">$0</strong></div>
@@ -737,6 +741,39 @@
         <div class="flex gap-3 mt-6">
           <button onclick="closeModal('modal-venta')" class="flex-1 py-3 rounded-full border border-outline-variant text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancelar</button>
           <button onclick="saveVenta()" class="flex-1 py-3 rounded-full editorial-gradient text-white font-bold shadow-sm">Guardar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Factura -->
+    <div id="modal-factura" class="modal-overlay hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl" id="factura-content">
+        <div class="flex items-center justify-between mb-1">
+          <div class="w-10 h-10 editorial-gradient rounded-full flex items-center justify-center">
+            <span class="material-symbols-outlined text-white text-lg">receipt_long</span>
+          </div>
+          <span class="text-xs text-slate-400 font-mono" id="fac-numero"></span>
+        </div>
+        <div class="text-center my-4">
+          <p class="text-xl font-headline font-extrabold text-primary">Faro App</p>
+          <p class="text-xs text-slate-400">Comprobante de Venta</p>
+        </div>
+        <div class="border-t border-dashed border-outline-variant my-3"></div>
+        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Fecha</span><span class="font-medium" id="fac-fecha"></span></div>
+        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Cliente</span><span class="font-medium" id="fac-cliente"></span></div>
+        <div class="border-t border-dashed border-outline-variant my-3"></div>
+        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Producto</span><span class="font-medium text-right max-w-[60%]" id="fac-producto"></span></div>
+        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Cantidad</span><span class="font-medium" id="fac-cantidad"></span></div>
+        <div class="flex justify-between text-sm mb-1"><span class="text-slate-500">Precio unitario</span><span class="font-medium" id="fac-precio"></span></div>
+        <div class="border-t border-outline-variant my-3"></div>
+        <div class="flex justify-between text-base font-bold"><span class="text-on-surface">TOTAL</span><span class="text-primary text-lg" id="fac-total"></span></div>
+        <div class="border-t border-dashed border-outline-variant my-3"></div>
+        <p class="text-center text-xs text-slate-400 mb-5">¡Gracias por tu compra!</p>
+        <div class="flex gap-3">
+          <button onclick="closeModal('modal-factura')" class="flex-1 py-3 rounded-full border border-outline-variant text-slate-600 font-bold hover:bg-slate-50 transition-colors text-sm">Cerrar</button>
+          <button onclick="imprimirFactura()" class="flex-1 py-3 rounded-full editorial-gradient text-white font-bold shadow-sm text-sm flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">print</span> Imprimir
+          </button>
         </div>
       </div>
     </div>
@@ -1802,12 +1839,19 @@ async function loadVentas() {
 async function openVentaModal() {
   // Cargar productos disponibles
   const prods = await apiFetch('/productos');
-  _productosCache = prods || [];
-  const sel = document.getElementById('venta-producto');
-  if (sel) {
-    sel.innerHTML = `<option value="">— Producto manual —</option>` +
-      _productosCache.map(p => `<option value="${p.id}" data-precio="${p.precio_venta}" data-costo="${p.costo_compra||0}" data-stock="${p.stock}">${escHtml(p.nombre)} (stock: ${p.stock})</option>`).join('');
-  }
+  _productosCache = (prods || []).filter(p => Number(p.stock) > 0);
+  // Reset search UI
+  const searchEl = document.getElementById('venta-producto-search');
+  if (searchEl) searchEl.value = '';
+  document.getElementById('venta-producto-id').value = '';
+  document.getElementById('venta-producto-costo').value = '';
+  document.getElementById('venta-producto-stock').value = '';
+  document.getElementById('venta-stock-hint')?.classList.add('hidden');
+  document.getElementById('venta-producto-dropdown')?.classList.add('hidden');
+  // Reset fields
+  document.getElementById('venta-cantidad').value = 1;
+  document.getElementById('venta-precio').value = '';
+  document.getElementById('venta-cliente').value = '';
   // Fecha default: hoy
   const fd = document.getElementById('venta-fecha');
   if (fd) fd.value = new Date().toISOString().split('T')[0];
@@ -1815,29 +1859,58 @@ async function openVentaModal() {
   openModal('modal-venta');
 }
 
-function onVentaProductoChange() {
-  const sel = document.getElementById('venta-producto');
-  const manualWrap = document.getElementById('venta-manual-nombre-wrap');
-  const isManual = !sel.value;
-  manualWrap?.classList.toggle('hidden', !isManual);
-  if (!isManual) {
-    const opt = sel.options[sel.selectedIndex];
-    document.getElementById('venta-precio').value = opt.dataset.precio || '';
+function filtrarProductosVenta(query) {
+  const dropdown = document.getElementById('venta-producto-dropdown');
+  if (!dropdown) return;
+  const q = (query || '').toLowerCase().trim();
+  const resultados = q
+    ? _productosCache.filter(p => p.nombre.toLowerCase().includes(q))
+    : _productosCache;
+  if (resultados.length === 0) {
+    dropdown.innerHTML = `<div class="px-4 py-3 text-sm text-slate-400">Sin resultados</div>`;
+  } else {
+    dropdown.innerHTML = resultados.map(p => `
+      <div class="px-4 py-3 text-sm cursor-pointer hover:bg-primary/5 flex justify-between items-center gap-2"
+           onclick="seleccionarProductoVenta(${p.id})">
+        <span class="font-medium text-on-surface">${escHtml(p.nombre)}</span>
+        <span class="text-xs text-slate-400 shrink-0">Stock: ${p.stock} · ${cop(p.precio_venta)}</span>
+      </div>`).join('');
   }
+  dropdown.classList.remove('hidden');
+}
+
+function seleccionarProductoVenta(id) {
+  const p = _productosCache.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('venta-producto-search').value = p.nombre;
+  document.getElementById('venta-producto-id').value = p.id;
+  document.getElementById('venta-producto-costo').value = p.costo_compra || 0;
+  document.getElementById('venta-producto-stock').value = p.stock;
+  document.getElementById('venta-precio').value = p.precio_venta || '';
+  document.getElementById('venta-stock-val').textContent = p.stock;
+  document.getElementById('venta-stock-hint')?.classList.remove('hidden');
+  // Max cantidad = stock disponible
+  const cantEl = document.getElementById('venta-cantidad');
+  cantEl.max = p.stock;
+  cantEl.value = Math.min(parseInt(cantEl.value) || 1, p.stock);
+  document.getElementById('venta-producto-dropdown')?.classList.add('hidden');
   calcVentaPreview();
 }
 
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('venta-producto-search')?.closest('.relative');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('venta-producto-dropdown')?.classList.add('hidden');
+  }
+});
+
 function calcVentaPreview() {
-  const sel   = document.getElementById('venta-producto');
-  const cant  = parseFloat(document.getElementById('venta-cantidad')?.value) || 0;
+  const cant   = parseFloat(document.getElementById('venta-cantidad')?.value) || 0;
   const precio = parseFloat(document.getElementById('venta-precio')?.value) || 0;
+  const costo  = parseFloat(document.getElementById('venta-producto-costo')?.value) || 0;
   const preview = document.getElementById('venta-preview');
   if (!cant || !precio) { preview?.classList.add('hidden'); return; }
-  let costo = 0;
-  if (sel?.value) {
-    const opt = sel.options[sel.selectedIndex];
-    costo = parseFloat(opt?.dataset.costo || 0);
-  }
   const total    = cant * precio;
   const ganancia = cant * (precio - costo);
   preview?.classList.remove('hidden');
@@ -1848,27 +1921,25 @@ function calcVentaPreview() {
 }
 
 async function saveVenta() {
-  const sel       = document.getElementById('venta-producto');
-  const prodId    = sel?.value ? parseInt(sel.value) : null;
-  const manualNom = document.getElementById('venta-manual-nombre')?.value.trim();
-  const cantidad  = parseInt(document.getElementById('venta-cantidad')?.value);
-  const precio    = parseFloat(document.getElementById('venta-precio')?.value);
-  const cliente   = document.getElementById('venta-cliente')?.value.trim();
-  const fecha     = document.getElementById('venta-fecha')?.value;
+  const prodId   = document.getElementById('venta-producto-id')?.value;
+  const prodNom  = document.getElementById('venta-producto-search')?.value.trim();
+  const cantidad = parseInt(document.getElementById('venta-cantidad')?.value);
+  const precio   = parseFloat(document.getElementById('venta-precio')?.value);
+  const costo_unitario = parseFloat(document.getElementById('venta-producto-costo')?.value) || 0;
+  const stock    = parseInt(document.getElementById('venta-producto-stock')?.value) || 0;
+  const cliente  = document.getElementById('venta-cliente')?.value.trim();
+  const fecha    = document.getElementById('venta-fecha')?.value;
 
-  if (!prodId && !manualNom) { alert('Selecciona un producto o ingresa un nombre'); return; }
+  if (!prodNom) { alert('Busca y selecciona un producto'); return; }
   if (!cantidad || cantidad < 1) { alert('La cantidad debe ser al menos 1'); return; }
-  if (!precio || precio <= 0)    { alert('Ingresa un precio válido'); return; }
+  if (prodId && stock > 0 && cantidad > stock) { alert(`Solo hay ${stock} unidades en stock`); return; }
+  if (!precio || precio <= 0) { alert('Ingresa un precio válido'); return; }
 
-  let costo_unitario = 0;
-  let producto_nombre = manualNom || '';
-  if (prodId && sel) {
-    const opt = sel.options[sel.selectedIndex];
-    costo_unitario = parseFloat(opt?.dataset.costo || 0);
-    producto_nombre = opt?.text.split(' (stock:')[0] || '';
-  }
-
-  const body = JSON.stringify({ producto_id: prodId, producto_nombre, cantidad, precio_unitario: precio, costo_unitario, cliente, fecha });
+  const body = JSON.stringify({
+    producto_id: prodId ? parseInt(prodId) : null,
+    producto_nombre: prodNom,
+    cantidad, precio_unitario: precio, costo_unitario, cliente, fecha
+  });
   const res = await apiFetch('/ventas', { method: 'POST', body });
   if (res && !res.error) {
     closeModal('modal-venta');
@@ -1876,6 +1947,16 @@ async function saveVenta() {
     loadProductos();
     loadFinanzas();
     loadDashboard();
+    // Mostrar factura
+    mostrarFactura({
+      numero: res.id || Date.now(),
+      producto_nombre: prodNom,
+      cantidad,
+      precio_unitario: precio,
+      total: cantidad * precio,
+      cliente: cliente || 'Consumidor Final',
+      fecha: fecha || new Date().toISOString().split('T')[0]
+    });
   }
 }
 
@@ -1883,6 +1964,54 @@ async function deleteVenta(id) {
   if (!confirm('¿Eliminar esta venta? El stock del producto será restaurado.')) return;
   const res = await apiFetch(`/ventas/${id}`, { method: 'DELETE' });
   if (res?.ok) { loadVentas(); loadProductos(); loadFinanzas(); loadDashboard(); }
+}
+
+function mostrarFactura(v) {
+  const pad = n => String(n).padStart(6, '0');
+  document.getElementById('fac-numero').textContent = `#${pad(v.numero)}`;
+  const [y, m, d] = (v.fecha || '').split('-');
+  document.getElementById('fac-fecha').textContent = d && m && y ? `${d}/${m}/${y}` : v.fecha;
+  document.getElementById('fac-cliente').textContent = v.cliente || 'Consumidor Final';
+  document.getElementById('fac-producto').textContent = v.producto_nombre;
+  document.getElementById('fac-cantidad').textContent = v.cantidad;
+  document.getElementById('fac-precio').textContent = cop(v.precio_unitario);
+  document.getElementById('fac-total').textContent = cop(v.total);
+  openModal('modal-factura');
+}
+
+function imprimirFactura() {
+  const content = document.getElementById('factura-content').innerHTML;
+  const win = window.open('', '_blank', 'width=400,height=600');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="utf-8"/>
+    <title>Factura Faro</title>
+    <style>
+      body { font-family: 'Be Vietnam Pro', Arial, sans-serif; padding: 24px; max-width: 360px; margin: 0 auto; color: #161d18; }
+      .editorial-gradient { background: linear-gradient(135deg,#006d43,#00a86b); }
+      .text-primary { color: #006d43; }
+      .text-slate-400 { color: #94a3b8; }
+      .text-slate-500 { color: #64748b; }
+      .text-on-surface { color: #161d18; }
+      .rounded-full { border-radius: 9999px; }
+      .w-10 { width: 40px; } .h-10 { height: 40px; }
+      .flex { display: flex; } .items-center { align-items: center; } .justify-center { justify-content: center; }
+      .justify-between { justify-content: space-between; }
+      .text-white { color: #fff; }
+      .font-mono { font-family: monospace; }
+      .my-4 { margin: 16px 0; } .my-3 { margin: 12px 0; } .mb-1 { margin-bottom: 4px; } .mb-5 { margin-bottom: 20px; }
+      .text-center { text-align: center; }
+      .border-t { border-top: 1px solid #bccabe; }
+      .border-dashed { border-style: dashed; }
+      .text-sm { font-size: 14px; } .text-xs { font-size: 12px; } .text-base { font-size: 16px; } .text-lg { font-size: 18px; } .text-xl { font-size: 20px; }
+      .font-bold { font-weight: 700; } .font-medium { font-weight: 500; } .font-extrabold { font-weight: 800; }
+      .text-right { text-align: right; } .max-w-\\[60\\%\\] { max-width: 60%; }
+      button { display: none; }
+      .material-symbols-outlined { display: none; }
+    </style>
+  </head><body>${content}</body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => { win.print(); win.close(); }, 400);
 }
 
 async function loadProductos() {
