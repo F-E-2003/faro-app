@@ -1223,9 +1223,15 @@
             <h4 class="font-headline font-bold text-lg">Calculadora de Margen</h4>
             <p class="text-sm text-on-surface-variant">Sabe exactamente cuánto ganas por cada producto que vendes.</p>
             <div class="mt-auto pt-4 border-t border-outline-variant/10 flex flex-col gap-3">
-              <div class="flex gap-3">
-                <input class="flex-1 bg-surface-container rounded-lg px-4 py-2 text-sm border-none focus:ring-1 focus:ring-primary outline-none" placeholder="Costo $" type="number"/>
-                <input class="flex-1 bg-surface-container rounded-lg px-4 py-2 text-sm border-none focus:ring-1 focus:ring-primary outline-none" placeholder="Precio $" type="number"/>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-400 font-medium pl-1">Costo $</label>
+                  <input class="w-full min-w-0 bg-surface-container rounded-lg px-3 py-2 text-sm border-none focus:ring-1 focus:ring-primary outline-none" placeholder="25000" type="number"/>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs text-slate-400 font-medium pl-1">Precio $</label>
+                  <input class="w-full min-w-0 bg-surface-container rounded-lg px-3 py-2 text-sm border-none focus:ring-1 focus:ring-primary outline-none" placeholder="50000" type="number"/>
+                </div>
               </div>
               <button onclick="calcMargen(this)" class="w-full bg-primary text-white py-2 rounded-full text-sm font-bold hover:opacity-90 transition-opacity">Calcular</button>
               <p class="text-center text-sm font-bold text-primary hidden" id="margen-result"></p>
@@ -2665,7 +2671,7 @@ function calcMargen(btn) {
   const result = document.getElementById('margen-result');
   if (isNaN(costo) || isNaN(precio) || precio === 0) { result.textContent = 'Ingresa valores válidos'; result.classList.remove('hidden'); return; }
   const margen = ((precio - costo) / precio * 100).toFixed(1);
-  result.textContent = `Margen: ${margen}% · Ganancia: $${(precio - costo).toFixed(2)}`;
+  result.textContent = `Margen: ${margen}% · Ganancia: ${cop(precio - costo)}`;
   result.classList.remove('hidden');
 }
 
