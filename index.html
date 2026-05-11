@@ -529,7 +529,7 @@
       <span class="material-symbols-outlined">construction</span>
       <span class="font-semibold text-sm">Herramientas</span>
     </a>
-    <a class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer" data-view="comunidad">
+    <a id="sidebar-comunidad" class="nav-item text-slate-500 px-10 py-3 flex items-center gap-3 hover:bg-[#ffffff80] rounded-full cursor-pointer" data-view="comunidad">
       <span class="material-symbols-outlined">groups</span>
       <span class="font-semibold text-sm">Comunidad</span>
     </a>
@@ -1918,7 +1918,7 @@ function enterApp(user, diasRestantes) {
   if (user.es_admin) {
     // Admin: ocultar nav de negocio en sidebar
     document.querySelectorAll('#sidebar-nav .nav-item').forEach(el => {
-      el.style.display = el.id === 'sidebar-admin' ? '' : 'none';
+      el.style.display = (el.id === 'sidebar-admin' || el.id === 'sidebar-comunidad') ? '' : 'none';
     });
     document.querySelectorAll('#sidebar-nav .h-px').forEach(el => el.style.display = 'none');
     // Cambiar subtítulo del sidebar
@@ -1949,6 +1949,10 @@ function enterApp(user, diasRestantes) {
         <button class="flex flex-col items-center gap-0.5 p-3 text-[#1568c4]" onclick="navigate('admin');loadAdminPanel()">
           <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
           <span class="text-[10px] font-bold">Admin</span>
+        </button>
+        <button class="flex flex-col items-center gap-0.5 p-3 text-slate-400" onclick="navigate('comunidad')">
+          <span class="material-symbols-outlined text-xl">groups</span>
+          <span class="text-[10px] font-semibold">Comunidad</span>
         </button>
         <button class="flex flex-col items-center gap-0.5 p-3 text-slate-400" onclick="logout()">
           <span class="material-symbols-outlined text-xl">logout</span>
@@ -3311,7 +3315,8 @@ function renderPost(post) {
   card.id = `post-${post.id}`;
   card.className = 'bg-surface-container-lowest rounded-2xl p-5 shadow-sm flex flex-col gap-3 mb-4';
 
-  const esPropio = _currentUser && _currentUser.id === post.usuario_id;
+  const esAdmin  = _currentUser && _currentUser.es_admin;
+  const esPropio = esAdmin || (_currentUser && _currentUser.id === post.usuario_id);
   const negocio  = post.nombre_negocio ? `<span class="text-xs text-primary font-semibold">${escHtml(post.nombre_negocio)}</span>` : '';
   const likeBtn  = `<button onclick="toggleLikeComunidad(${post.id},this)"
     class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full transition-all ${post.yo_like ? 'bg-primary/10 text-primary font-bold' : 'text-slate-400 hover:bg-primary/5 hover:text-primary'}"
@@ -3328,7 +3333,9 @@ function renderPost(post) {
   // Respuestas HTML
   let respHtml = '';
   if (post.respuestas && post.respuestas.length) {
-    respHtml = post.respuestas.map(r => `
+    respHtml = post.respuestas.map(r => {
+      const puedeElimR = esAdmin || (_currentUser && _currentUser.id === r.usuario_id);
+      return `
       <div class="flex gap-2.5 items-start" id="resp-${r.id}">
         <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
           style="background:${avatarColor(r.usuario_nombre)}">${getInitial(r.usuario_nombre)}</div>
@@ -3337,10 +3344,12 @@ function renderPost(post) {
             <span class="font-semibold text-xs">${escHtml(r.usuario_nombre)}</span>
             ${r.nombre_negocio ? `<span class="text-xs text-primary font-semibold">${escHtml(r.nombre_negocio)}</span>` : ''}
             <span class="text-xs text-slate-400 ml-auto">${timeAgo(r.created_at)}</span>
+            ${puedeElimR ? `<button onclick="eliminarRespuestaComunidad(${r.id})" class="text-red-400 hover:text-red-600 transition-colors ml-1"><span class="material-symbols-outlined text-sm">delete</span></button>` : ''}
           </div>
           <p class="text-sm text-on-surface">${escHtml(r.contenido)}</p>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   card.innerHTML = `
@@ -3442,6 +3451,7 @@ async function enviarRespuesta(postId) {
       const div = document.createElement('div');
       div.id = `resp-${resp.id}`;
       div.className = 'flex gap-2.5 items-start';
+      const puedeElimR = _currentUser?.es_admin || (_currentUser?.id === resp.usuario_id);
       div.innerHTML = `
         <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
           style="background:${avatarColor(resp.usuario_nombre)}">${getInitial(resp.usuario_nombre)}</div>
@@ -3450,6 +3460,7 @@ async function enviarRespuesta(postId) {
             <span class="font-semibold text-xs">${escHtml(resp.usuario_nombre)}</span>
             ${resp.nombre_negocio ? `<span class="text-xs text-primary font-semibold">${escHtml(resp.nombre_negocio)}</span>` : ''}
             <span class="text-xs text-slate-400 ml-auto">hace un momento</span>
+            ${puedeElimR ? `<button onclick="eliminarRespuestaComunidad(${resp.id})" class="text-red-400 hover:text-red-600 transition-colors ml-1"><span class="material-symbols-outlined text-sm">delete</span></button>` : ''}
           </div>
           <p class="text-sm text-on-surface">${escHtml(resp.contenido)}</p>
         </div>`;
@@ -3487,6 +3498,29 @@ async function toggleLikeComunidad(postId, btn) {
       : Math.max(0, parseInt(sl.textContent||0)-1);
   } catch (e) {
     // silencioso
+  }
+}
+
+async function eliminarRespuestaComunidad(respId) {
+  if (!confirm('¿Eliminar esta respuesta?')) return;
+  try {
+    await apiFetch(`/comunidad/respuestas/${respId}`, { method: 'DELETE' });
+    const el = document.getElementById(`resp-${respId}`);
+    if (el) {
+      // Decrementar contador del post padre
+      const respContainer = el.closest('[id^="respuestas-"]');
+      if (respContainer) {
+        const postId = respContainer.id.replace('respuestas-', '');
+        const cntEl  = document.getElementById(`resp-count-${postId}`);
+        if (cntEl) cntEl.textContent = Math.max(0, parseInt(cntEl.textContent || 0) - 1);
+      }
+      el.remove();
+      // Stats globales
+      const sr = document.getElementById('com-stat-resp');
+      if (sr) sr.textContent = Math.max(0, parseInt(sr.textContent || 0) - 1);
+    }
+  } catch (e) {
+    alert('No se pudo eliminar la respuesta.');
   }
 }
 

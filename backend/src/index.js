@@ -1038,8 +1038,8 @@ app.get('/api/comunidad', auth, async (req, res) => {
         ORDER BY r.created_at ASC`, [post.id]);
     }
 
-    // Stats globales
-    const [{ total_users }] = await q(`SELECT COUNT(*) AS total_users FROM usuarios`);
+    // Stats globales — excluir admins del conteo de emprendedores
+    const [{ total_users }] = await q(`SELECT COUNT(*) AS total_users FROM usuarios WHERE es_admin=0`);
     const [{ total_posts }] = await q(`SELECT COUNT(*) AS total_posts FROM comunidad_posts`);
     const [{ total_resp }]  = await q(`SELECT COUNT(*) AS total_resp FROM comunidad_respuestas`);
     const [{ total_likes }] = await q(`SELECT COUNT(*) AS total_likes FROM comunidad_likes`);
@@ -1117,14 +1117,39 @@ app.post('/api/comunidad/:id/like', auth, async (req, res) => {
   }
 });
 
-// DELETE /api/comunidad/:id — borrar propio post
+// DELETE /api/comunidad/:id — borrar post (propio o admin)
 app.delete('/api/comunidad/:id', auth, async (req, res) => {
   const postId = parseInt(req.params.id);
-  const uid = req.user.id;
+  const uid    = req.user.id;
+  const isAdmin = !!req.user.es_admin;
   try {
-    const rows = await q(`SELECT id FROM comunidad_posts WHERE id=? AND usuario_id=?`, [postId, uid]);
-    if (!rows.length) return res.status(403).json({ error: 'No tienes permiso' });
+    const rows = await q(`SELECT id FROM comunidad_posts WHERE id=?`, [postId]);
+    if (!rows.length) return res.status(404).json({ error: 'No encontrado' });
+    if (!isAdmin) {
+      const own = await q(`SELECT id FROM comunidad_posts WHERE id=? AND usuario_id=?`, [postId, uid]);
+      if (!own.length) return res.status(403).json({ error: 'No tienes permiso' });
+    }
     await q(`DELETE FROM comunidad_posts WHERE id=?`, [postId]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al eliminar' });
+  }
+});
+
+// DELETE /api/comunidad/respuestas/:id — borrar respuesta (propia o admin)
+app.delete('/api/comunidad/respuestas/:id', auth, async (req, res) => {
+  const respId  = parseInt(req.params.id);
+  const uid     = req.user.id;
+  const isAdmin = !!req.user.es_admin;
+  try {
+    const rows = await q(`SELECT id FROM comunidad_respuestas WHERE id=?`, [respId]);
+    if (!rows.length) return res.status(404).json({ error: 'No encontrado' });
+    if (!isAdmin) {
+      const own = await q(`SELECT id FROM comunidad_respuestas WHERE id=? AND usuario_id=?`, [respId, uid]);
+      if (!own.length) return res.status(403).json({ error: 'No tienes permiso' });
+    }
+    await q(`DELETE FROM comunidad_respuestas WHERE id=?`, [respId]);
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
