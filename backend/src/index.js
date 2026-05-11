@@ -233,6 +233,38 @@ async function initDB() {
         FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
       )`);
 
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS comunidad_posts (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        usuario_id INT NOT NULL,
+        usuario_nombre VARCHAR(100) NOT NULL,
+        contenido TEXT NOT NULL,
+        likes INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+      )`);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS comunidad_likes (
+        usuario_id INT NOT NULL,
+        post_id INT NOT NULL,
+        PRIMARY KEY (usuario_id, post_id),
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+        FOREIGN KEY (post_id) REFERENCES comunidad_posts(id) ON DELETE CASCADE
+      )`);
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS comunidad_respuestas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        post_id INT NOT NULL,
+        usuario_id INT NOT NULL,
+        usuario_nombre VARCHAR(100) NOT NULL,
+        contenido TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES comunidad_posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+      )`);
+
     // ── Auto-promover admins en cada arranque ──────────────────────────────────
     if (ADMIN_EMAILS.length) {
       for (const adminEmail of ADMIN_EMAILS) {
@@ -979,6 +1011,126 @@ function generarRespuesta(mensaje, ctx) {
   // ── Fallback ──
   return `${nombre}, no entendí bien tu consulta. Puedo ayudarte con:\n\n• 💵 "¿Cómo están mis finanzas?"\n• 📦 "¿Tengo stock bajo?"\n• 🔄 "¿Cómo mejorar la reposición?"\n• 🚀 "¿Cómo vender más?"\n• ✂️ "¿Cómo reducir gastos?"\n• 💲 "¿Cómo fijar precios?"\n• 🤝 "Consejo para mis proveedores"\n• 🎯 "¿Cómo va mi meta?"`;
 }
+
+// ── COMUNIDAD ────────────────────────────────────────────────────────────────
+
+// GET /api/comunidad — lista posts con respuestas y si el usuario actual dio like
+app.get('/api/comunidad', auth, async (req, res) => {
+  try {
+    const uid = req.user.id;
+    const posts = await q(`
+      SELECT p.*, u.nombre_negocio,
+        (SELECT COUNT(*) FROM comunidad_likes WHERE post_id=p.id) AS likes_count,
+        (SELECT COUNT(*) FROM comunidad_respuestas WHERE post_id=p.id) AS resp_count,
+        EXISTS(SELECT 1 FROM comunidad_likes WHERE post_id=p.id AND usuario_id=?) AS yo_like
+      FROM comunidad_posts p
+      JOIN usuarios u ON u.id=p.usuario_id
+      ORDER BY p.created_at DESC
+      LIMIT 50`, [uid]);
+
+    // Cargar respuestas de cada post
+    for (const post of posts) {
+      post.respuestas = await q(`
+        SELECT r.*, u.nombre_negocio
+        FROM comunidad_respuestas r
+        JOIN usuarios u ON u.id=r.usuario_id
+        WHERE r.post_id=?
+        ORDER BY r.created_at ASC`, [post.id]);
+    }
+
+    // Stats globales
+    const [{ total_users }] = await q(`SELECT COUNT(*) AS total_users FROM usuarios`);
+    const [{ total_posts }] = await q(`SELECT COUNT(*) AS total_posts FROM comunidad_posts`);
+    const [{ total_resp }]  = await q(`SELECT COUNT(*) AS total_resp FROM comunidad_respuestas`);
+    const [{ total_likes }] = await q(`SELECT COUNT(*) AS total_likes FROM comunidad_likes`);
+
+    res.json({ posts, stats: { usuarios: total_users, posts: total_posts, respuestas: total_resp, likes: total_likes } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al cargar comunidad' });
+  }
+});
+
+// POST /api/comunidad — nueva publicación
+app.post('/api/comunidad', auth, async (req, res) => {
+  const { contenido } = req.body;
+  if (!contenido || !contenido.trim())
+    return res.status(400).json({ error: 'El contenido no puede estar vacío' });
+  try {
+    const uid = req.user.id;
+    const nombre = req.user.nombre || 'Usuario';
+    const result = await q(
+      `INSERT INTO comunidad_posts (usuario_id, usuario_nombre, contenido) VALUES (?,?,?)`,
+      [uid, nombre, contenido.trim()]);
+    const [post] = await q(`SELECT * FROM comunidad_posts WHERE id=?`, [result.insertId]);
+    post.respuestas = [];
+    post.likes_count = 0;
+    post.resp_count = 0;
+    post.yo_like = 0;
+    const [u] = await q(`SELECT nombre_negocio FROM usuarios WHERE id=?`, [uid]);
+    post.nombre_negocio = u?.nombre_negocio || '';
+    res.json(post);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al publicar' });
+  }
+});
+
+// POST /api/comunidad/:id/respuestas — nueva respuesta a un post
+app.post('/api/comunidad/:id/respuestas', auth, async (req, res) => {
+  const postId = parseInt(req.params.id);
+  const { contenido } = req.body;
+  if (!contenido || !contenido.trim())
+    return res.status(400).json({ error: 'La respuesta no puede estar vacía' });
+  try {
+    const uid = req.user.id;
+    const nombre = req.user.nombre || 'Usuario';
+    const result = await q(
+      `INSERT INTO comunidad_respuestas (post_id, usuario_id, usuario_nombre, contenido) VALUES (?,?,?,?)`,
+      [postId, uid, nombre, contenido.trim()]);
+    const [resp] = await q(`SELECT * FROM comunidad_respuestas WHERE id=?`, [result.insertId]);
+    const [u] = await q(`SELECT nombre_negocio FROM usuarios WHERE id=?`, [uid]);
+    resp.nombre_negocio = u?.nombre_negocio || '';
+    res.json(resp);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al responder' });
+  }
+});
+
+// POST /api/comunidad/:id/like — toggle like
+app.post('/api/comunidad/:id/like', auth, async (req, res) => {
+  const postId = parseInt(req.params.id);
+  const uid = req.user.id;
+  try {
+    const existing = await q(`SELECT 1 FROM comunidad_likes WHERE post_id=? AND usuario_id=?`, [postId, uid]);
+    if (existing.length) {
+      await q(`DELETE FROM comunidad_likes WHERE post_id=? AND usuario_id=?`, [postId, uid]);
+    } else {
+      await q(`INSERT INTO comunidad_likes (post_id, usuario_id) VALUES (?,?)`, [postId, uid]);
+    }
+    const [{ cnt }] = await q(`SELECT COUNT(*) AS cnt FROM comunidad_likes WHERE post_id=?`, [postId]);
+    res.json({ likes: cnt, yo_like: !existing.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al procesar like' });
+  }
+});
+
+// DELETE /api/comunidad/:id — borrar propio post
+app.delete('/api/comunidad/:id', auth, async (req, res) => {
+  const postId = parseInt(req.params.id);
+  const uid = req.user.id;
+  try {
+    const rows = await q(`SELECT id FROM comunidad_posts WHERE id=? AND usuario_id=?`, [postId, uid]);
+    if (!rows.length) return res.status(403).json({ error: 'No tienes permiso' });
+    await q(`DELETE FROM comunidad_posts WHERE id=?`, [postId]);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al eliminar' });
+  }
+});
 
 // ── FRONTEND ──────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(FRONTEND_PATH));

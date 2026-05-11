@@ -13,53 +13,53 @@
     theme: {
       extend: {
         colors: {
-          "primary": "#006d43",
-          "inverse-on-surface": "#ecf3eb",
-          "on-surface-variant": "#3d4a41",
-          "outline-variant": "#bccabe",
-          "background": "#f4fbf3",
-          "secondary": "#545e76",
-          "on-primary-container": "#00331d",
-          "tertiary-container": "#d28000",
-          "surface": "#f4fbf3",
+          "primary": "#1568c4",
+          "inverse-on-surface": "#e8edf8",
+          "on-surface-variant": "#3d4f70",
+          "outline-variant": "#bacbdf",
+          "background": "#f5f8ff",
+          "secondary": "#4a5e88",
+          "on-primary-container": "#001d40",
+          "tertiary-container": "#f5c500",
+          "surface": "#f5f8ff",
           "on-tertiary": "#ffffff",
           "surface-container-lowest": "#ffffff",
-          "on-tertiary-container": "#432500",
-          "inverse-surface": "#2b322d",
-          "surface-container": "#e9f0e8",
-          "surface-container-highest": "#dde4dd",
-          "secondary-container": "#d7e2ff",
-          "tertiary-fixed-dim": "#ffb86b",
-          "on-secondary-fixed": "#101b30",
+          "on-tertiary-container": "#2c1700",
+          "inverse-surface": "#0d1f45",
+          "surface-container": "#e8edf8",
+          "surface-container-highest": "#d2dae9",
+          "secondary-container": "#dce7ff",
+          "tertiary-fixed-dim": "#f4b942",
+          "on-secondary-fixed": "#0e1b30",
           "error": "#ba1a1a",
-          "surface-dim": "#d5dcd4",
+          "surface-dim": "#d4dbee",
           "on-primary": "#ffffff",
           "on-error": "#ffffff",
-          "surface-variant": "#dde4dd",
-          "tertiary-fixed": "#ffdcbc",
-          "on-primary-fixed": "#002111",
-          "secondary-fixed": "#d7e2ff",
-          "on-secondary-container": "#5a647c",
-          "inverse-primary": "#59de9b",
-          "on-tertiary-fixed-variant": "#683d00",
+          "surface-variant": "#dde6f2",
+          "tertiary-fixed": "#ffe8a0",
+          "on-primary-fixed": "#001d40",
+          "secondary-fixed": "#dce7ff",
+          "on-secondary-container": "#2a3f64",
+          "inverse-primary": "#7ecef5",
+          "on-tertiary-fixed-variant": "#5a3e00",
           "on-tertiary-fixed": "#2c1700",
-          "on-surface": "#161d18",
-          "surface-container-low": "#eef6ed",
-          "on-background": "#161d18",
+          "on-surface": "#0e1b36",
+          "surface-container-low": "#eef2fb",
+          "on-background": "#0e1b36",
           "error-container": "#ffdad6",
-          "primary-fixed": "#78fbb6",
+          "primary-fixed": "#c5e3ff",
           "on-error-container": "#93000a",
-          "on-secondary-fixed-variant": "#3c475d",
-          "tertiary": "#895100",
-          "surface-tint": "#006d43",
-          "surface-bright": "#f4fbf3",
-          "primary-fixed-dim": "#59de9b",
-          "outline": "#6d7a70",
+          "on-secondary-fixed-variant": "#304060",
+          "tertiary": "#7b5700",
+          "surface-tint": "#1568c4",
+          "surface-bright": "#fafcff",
+          "primary-fixed-dim": "#7ecef5",
+          "outline": "#6075a0",
           "on-secondary": "#ffffff",
-          "primary-container": "#00a86b",
-          "surface-container-high": "#e3eae2",
-          "on-primary-fixed-variant": "#005232",
-          "secondary-fixed-dim": "#bbc6e2"
+          "primary-container": "#0096c7",
+          "surface-container-high": "#dde4f2",
+          "on-primary-fixed-variant": "#0b4a9e",
+          "secondary-fixed-dim": "#b8caee"
         },
         borderRadius: {
           "DEFAULT": "1rem",
@@ -78,8 +78,8 @@
 </script>
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-  .editorial-gradient { background: linear-gradient(135deg, #006d43 0%, #00a86b 100%); }
-  .glass-assistant { background: rgba(244, 251, 243, 0.8); backdrop-filter: blur(12px); }
+  .editorial-gradient { background: linear-gradient(135deg, #1261b8 0%, #0096c7 100%); }
+  .glass-assistant { background: rgba(240, 246, 255, 0.85); backdrop-filter: blur(12px); }
   .view { display: none; }
   .view.active { display: block; }
   .nav-item { transition: all 0.2s; }
@@ -131,8 +131,8 @@
     main, section, .view { max-width: 100vw; overflow-x: hidden; }
   }
   .nav-item.active {
-    background: white; color: #006d43; border-radius: 9999px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    background: white; color: #1568c4; border-radius: 9999px;
+    box-shadow: 0 1px 6px rgba(21,104,196,0.15);
     margin-left: 1rem; margin-right: 1rem;
     padding-left: 1.5rem; padding-right: 1.5rem;
   }
@@ -140,9 +140,9 @@
   @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
   .fade-in { animation: fadeIn 0.35s ease; }
   @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
-  .mobile-nav-btn.active span.label { color: #006d43; font-weight: 700; }
-  .mobile-nav-btn.active .material-symbols-outlined { color: #006d43; }
-  .auth-tab.active { color: #006d43; border-bottom: 2px solid #006d43; }
+  .mobile-nav-btn.active span.label { color: #1568c4; font-weight: 700; }
+  .mobile-nav-btn.active .material-symbols-outlined { color: #1568c4; }
+  .auth-tab.active { color: #1568c4; border-bottom: 2px solid #1568c4; }
   .chat-panel-enter { animation: slideUp 0.25s ease; }
   @keyframes slideUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
 </style>
@@ -325,44 +325,44 @@
       <div class="rounded-[2rem] shadow-2xl p-8 md:p-10" style="background:rgba(255,255,255,0.90);backdrop-filter:blur(20px);">
         <div class="text-center mb-8">
           <img src="/logofaro.png" alt="Faro" class="w-16 h-16 rounded-2xl shadow mx-auto mb-3"/>
-          <h1 class="font-headline font-black text-3xl text-[#006d43]">Activa tu Copiloto</h1>
+          <h1 class="font-headline font-black text-3xl text-[#1568c4]">Activa tu Copiloto</h1>
           <p class="text-slate-500 mt-1">Gestiona tu negocio con inteligencia — desde cualquier dispositivo</p>
         </div>
         <!-- Beneficios -->
         <div class="flex flex-col gap-2 mb-8">
           <div class="flex items-center gap-3 py-2 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-full bg-[#e8f5ef] flex items-center justify-center shrink-0 text-base">💵</div>
+            <div class="w-8 h-8 rounded-full bg-[#e3ecf8] flex items-center justify-center shrink-0 text-base">💵</div>
             <div><p class="font-semibold text-sm">Control Financiero</p><p class="text-xs text-slate-400">Ingresos, gastos y flujo de caja en tiempo real</p></div>
-            <span class="ml-auto text-[#006d43] text-lg">✓</span>
+            <span class="ml-auto text-[#1568c4] text-lg">✓</span>
           </div>
           <div class="flex items-center gap-3 py-2 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-full bg-[#e8f5ef] flex items-center justify-center shrink-0 text-base">📦</div>
+            <div class="w-8 h-8 rounded-full bg-[#e3ecf8] flex items-center justify-center shrink-0 text-base">📦</div>
             <div><p class="font-semibold text-sm">Inventario Visual</p><p class="text-xs text-slate-400">Stock, alertas y gestión de productos</p></div>
-            <span class="ml-auto text-[#006d43] text-lg">✓</span>
+            <span class="ml-auto text-[#1568c4] text-lg">✓</span>
           </div>
           <div class="flex items-center gap-3 py-2 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-full bg-[#e8f5ef] flex items-center justify-center shrink-0 text-base">🤖</div>
+            <div class="w-8 h-8 rounded-full bg-[#e3ecf8] flex items-center justify-center shrink-0 text-base">🤖</div>
             <div><p class="font-semibold text-sm">Mentor de Bolsillo IA</p><p class="text-xs text-slate-400">Consejos personalizados según tus datos reales</p></div>
-            <span class="ml-auto text-[#006d43] text-lg">✓</span>
+            <span class="ml-auto text-[#1568c4] text-lg">✓</span>
           </div>
           <div class="flex items-center gap-3 py-2 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-full bg-[#e8f5ef] flex items-center justify-center shrink-0 text-base">🎯</div>
+            <div class="w-8 h-8 rounded-full bg-[#e3ecf8] flex items-center justify-center shrink-0 text-base">🎯</div>
             <div><p class="font-semibold text-sm">Metas y Proyecciones</p><p class="text-xs text-slate-400">Define objetivos y proyecta tu crecimiento</p></div>
-            <span class="ml-auto text-[#006d43] text-lg">✓</span>
+            <span class="ml-auto text-[#1568c4] text-lg">✓</span>
           </div>
           <div class="flex items-center gap-3 py-2 border-b border-slate-100">
-            <div class="w-8 h-8 rounded-full bg-[#e8f5ef] flex items-center justify-center shrink-0 text-base">🚚</div>
+            <div class="w-8 h-8 rounded-full bg-[#e3ecf8] flex items-center justify-center shrink-0 text-base">🚚</div>
             <div><p class="font-semibold text-sm">Gestión de Proveedores</p><p class="text-xs text-slate-400">Controla plazos y aliados estratégicos</p></div>
-            <span class="ml-auto text-[#006d43] text-lg">✓</span>
+            <span class="ml-auto text-[#1568c4] text-lg">✓</span>
           </div>
           <div class="flex items-center gap-3 py-2">
-            <div class="w-8 h-8 rounded-full bg-[#e8f5ef] flex items-center justify-center shrink-0 text-base">📱</div>
+            <div class="w-8 h-8 rounded-full bg-[#e3ecf8] flex items-center justify-center shrink-0 text-base">📱</div>
             <div><p class="font-semibold text-sm">Acceso desde cualquier lugar</p><p class="text-xs text-slate-400">Celular, tablet y computador</p></div>
-            <span class="ml-auto text-[#006d43] text-lg">✓</span>
+            <span class="ml-auto text-[#1568c4] text-lg">✓</span>
           </div>
         </div>
         <!-- Precio -->
-        <div class="bg-[#006d43] text-white rounded-2xl p-6 text-center mb-6">
+        <div class="rounded-2xl p-6 text-center mb-6 text-white" style="background:linear-gradient(135deg,#0d1f45 0%,#1568c4 60%,#0096c7 100%)">
           <p class="text-sm font-medium opacity-80 uppercase tracking-widest mb-1">Suscripción mensual</p>
           <p class="font-headline font-black text-5xl">$150.000</p>
           <p class="text-sm opacity-70 mt-1">COP · 30 días de acceso completo</p>
@@ -380,28 +380,45 @@
         <button onclick="showSubScreen('planes')" class="flex items-center gap-1 text-slate-400 text-sm mb-6 hover:text-slate-600">
           ← Volver
         </button>
-        <h2 class="font-headline font-black text-2xl text-[#006d43] mb-1">Realizar pago</h2>
+        <h2 class="font-headline font-black text-2xl text-[#1568c4] mb-1">Realizar pago</h2>
         <p class="text-slate-500 text-sm mb-6">Elige tu método y envía la referencia o número de transacción</p>
         <!-- Métodos -->
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Método de pago</p>
-        <div class="grid grid-cols-3 gap-3 mb-6" id="metodos-pago">
-          <button onclick="selectMetodo('Nequi')" id="btn-Nequi" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#7B2D8B] transition-colors flex flex-col items-center gap-1">
+        <div class="grid grid-cols-3 gap-3 mb-4" id="metodos-pago">
+          <button onclick="selectMetodo('Nequi')" id="btn-Nequi" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#1568c4] transition-all flex flex-col items-center gap-1">
             <img src="/logonequi.png" alt="Nequi" class="w-10 h-10 object-contain rounded-lg"/>
             <p class="text-xs font-bold">Nequi</p>
           </button>
-          <button onclick="selectMetodo('Daviplata')" id="btn-Daviplata" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#E30613] transition-colors flex flex-col items-center gap-1">
+          <button onclick="selectMetodo('Daviplata')" id="btn-Daviplata" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#1568c4] transition-all flex flex-col items-center gap-1">
             <img src="/logodaviplata.png" alt="Daviplata" class="w-10 h-10 object-contain rounded-lg"/>
             <p class="text-xs font-bold">Daviplata</p>
           </button>
-          <button onclick="selectMetodo('Llave')" id="btn-Llave" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#006d43] transition-colors flex flex-col items-center gap-1">
-            <div class="w-10 h-10 bg-[#f0faf5] rounded-lg flex items-center justify-center text-2xl">🔑</div>
+          <button onclick="selectMetodo('Llave')" id="btn-Llave" class="metodo-btn border-2 border-outline-variant rounded-2xl p-3 text-center hover:border-[#1568c4] transition-all flex flex-col items-center gap-1">
+            <div class="w-10 h-10 bg-[#eef4ff] rounded-lg flex items-center justify-center text-2xl">🔑</div>
             <p class="text-xs font-bold">Llave</p>
           </button>
         </div>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Número / Referencia de pago</p>
+
+        <!-- Número destino (aparece al seleccionar método) -->
+        <div id="pago-destino" class="hidden mb-4 rounded-2xl overflow-hidden" style="border:2px solid #1568c4">
+          <div class="px-4 py-2 text-xs font-bold text-white uppercase tracking-widest" style="background:linear-gradient(135deg,#1261b8 0%,#0096c7 100%)">
+            📲 Envía el pago a este número
+          </div>
+          <div class="px-4 py-3 bg-[#eef4ff] flex items-center justify-between gap-3">
+            <span id="pago-destino-numero" class="font-black text-xl tracking-widest text-[#1568c4] font-mono select-all"></span>
+            <button onclick="copiarNumeroPago()" class="text-xs text-[#1568c4] font-bold flex items-center gap-1 hover:opacity-70 transition-opacity">
+              <span class="material-symbols-outlined text-base">content_copy</span> Copiar
+            </button>
+          </div>
+          <div class="px-4 py-2 bg-white border-t border-outline-variant/30">
+            <p class="text-xs text-slate-500">Envía exactamente <strong>$150.000 COP</strong> y luego pega la referencia abajo.</p>
+          </div>
+        </div>
+
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Referencia / Comprobante de pago</p>
         <input id="pago-referencia" type="text" placeholder="Ej: 3214567890 o #REF123456"
           class="w-full bg-surface-container-low rounded-xl px-4 py-3 text-sm border-2 border-outline-variant focus:border-primary outline-none mb-2"/>
-        <p class="text-xs text-slate-400 mb-6">Envía $150.000 COP al número de tu método y pega aquí la referencia o comprobante.</p>
+        <p class="text-xs text-slate-400 mb-5">Pega aquí el número de transacción o captura del comprobante.</p>
         <p id="pago-error" class="text-error text-xs min-h-[1rem] mb-2"></p>
         <button onclick="solicitarPago()" class="w-full editorial-gradient text-white py-3 rounded-full font-bold hover:opacity-90 transition-opacity">
           Enviar solicitud de pago
@@ -414,9 +431,9 @@
     <div id="sub-pendiente" class="hidden w-full max-w-md">
       <div class="rounded-[2rem] shadow-2xl p-8 text-center" style="background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);">
         <div class="text-5xl mb-2">⏳</div>
-        <h2 class="font-headline font-black text-2xl text-[#006d43] mb-2">Pago en revisión</h2>
+        <h2 class="font-headline font-black text-2xl text-[#1568c4] mb-2">Pago en revisión</h2>
         <p class="text-slate-500 text-sm mb-6">Tu solicitud fue enviada. Un administrador verificará el pago y te enviará un <strong>token de activación</strong> por correo electrónico.</p>
-        <div class="bg-[#f0faf5] rounded-2xl p-4 mb-6 text-left">
+        <div class="bg-[#eef4ff] rounded-2xl p-4 mb-6 text-left">
           <p class="text-xs font-bold text-slate-400 uppercase mb-2">Tu solicitud</p>
           <p class="text-sm"><span class="font-bold">Método:</span> <span id="pend-metodo">—</span></p>
           <p class="text-sm"><span class="font-bold">Referencia:</span> <span id="pend-referencia">—</span></p>
@@ -466,11 +483,11 @@
 <div id="app-container" class="hidden flex min-h-screen">
 
 <!-- ── SIDEBAR ── -->
-<aside class="hidden md:flex flex-col h-screen w-72 rounded-r-[3rem] sticky left-0 top-0 bg-[#e9f0e8] py-10 gap-2 z-40">
+<aside class="hidden md:flex flex-col h-screen w-72 rounded-r-[3rem] sticky left-0 top-0 bg-[#e8edf8] py-10 gap-2 z-40">
   <div class="px-10 mb-8 flex items-center gap-3">
     <img src="/logofaro.png" alt="Faro" class="w-12 h-12 rounded-xl shadow"/>
     <div>
-      <h1 class="font-headline font-black text-xl text-[#006d43]">Faro</h1>
+      <h1 class="font-headline font-black text-xl text-[#1568c4]">Faro</h1>
       <p class="text-xs font-medium text-slate-500 uppercase tracking-widest" id="sidebar-subtitle">Copiloto de Negocio</p>
     </div>
   </div>
@@ -526,7 +543,7 @@
   <!-- Admin sidebar content (hidden for regular users) -->
   <div id="admin-sidebar-content" class="hidden px-6 mt-6 flex flex-col gap-4">
     <!-- Tarjeta perfil admin -->
-    <div class="rounded-2xl p-4" style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)">
+    <div class="rounded-2xl p-4" style="background:linear-gradient(135deg,#1261b8 0%,#0096c7 100%)">
       <div class="flex items-center gap-3 mb-3">
         <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-bold text-white text-lg" id="admin-sidebar-avatar">A</div>
         <div>
@@ -548,7 +565,7 @@
     <!-- Info -->
     <div class="bg-white/60 rounded-2xl p-4 flex flex-col gap-2">
       <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Acciones rápidas</p>
-      <button onclick="loadAdminPanel()" class="flex items-center gap-2 text-sm text-[#006d43] font-semibold hover:bg-[#006d43]/10 px-2 py-1.5 rounded-xl transition-colors w-full text-left">
+      <button onclick="loadAdminPanel()" class="flex items-center gap-2 text-sm text-[#1568c4] font-semibold hover:bg-[#1568c4]/10 px-2 py-1.5 rounded-xl transition-colors w-full text-left">
         <span class="material-symbols-outlined text-base">refresh</span> Actualizar panel
       </button>
       <button onclick="logout()" class="flex items-center gap-2 text-sm text-red-400 font-semibold hover:bg-red-50 px-2 py-1.5 rounded-xl transition-colors w-full text-left">
@@ -579,15 +596,15 @@
         <!-- Logo móvil -->
         <div class="flex items-center gap-2 md:hidden">
           <img src="/logofaro.png" alt="Faro" class="w-8 h-8 rounded-lg"/>
-          <span class="font-headline text-xl font-black text-[#006d43] tracking-tighter">Faro</span>
+          <span class="font-headline text-xl font-black text-[#1568c4] tracking-tighter">Faro</span>
         </div>
         <nav class="hidden md:flex items-center gap-6 text-sm font-bold tracking-tight font-headline" id="top-nav">
-          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="dashboard">Inicio</a>
-          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="finanzas">Finanzas</a>
-          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="stock">Inventario</a>
-          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="ventas">Ventas</a>
-          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="proveedores">Proveedores</a>
-          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors" data-view="metas">Metas</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors" data-view="dashboard">Inicio</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors" data-view="finanzas">Finanzas</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors" data-view="stock">Inventario</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors" data-view="ventas">Ventas</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors" data-view="proveedores">Proveedores</a>
+          <a class="cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors" data-view="metas">Metas</a>
         </nav>
       </div>
       <div class="flex items-center gap-2 sm:gap-4">
@@ -1387,55 +1404,63 @@
     <!-- ── VISTA: COMUNIDAD ── -->
     <div class="view fade-in" id="view-comunidad">
       <div class="p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 md:mb-16">
+        <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div class="max-w-2xl">
             <h2 class="text-3xl md:text-5xl lg:text-6xl font-headline font-extrabold text-on-surface tracking-tight leading-tight">
               No navegas <span class="text-primary italic">solo</span>
             </h2>
-            <p class="text-xl text-on-surface-variant mt-4 font-body leading-relaxed">
-              Aprende de otros emprendedores como tú. Comparte lo que funciona.
+            <p class="text-lg text-on-surface-variant mt-3 font-body">
+              Aprende de otros emprendedores. Comparte lo que funciona.
             </p>
           </div>
         </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
-          <div class="md:col-span-8 flex flex-col gap-6">
-            <div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm flex flex-col gap-4">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 editorial-gradient rounded-full flex items-center justify-center text-white font-bold">M</div>
-                <div><p class="font-bold text-sm">María López</p><p class="text-xs text-slate-400">Tienda de ropa · Monterrey · hace 2h</p></div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <!-- Feed principal -->
+          <div class="md:col-span-8 flex flex-col gap-4">
+
+            <!-- Caja para publicar -->
+            <div class="bg-surface-container-lowest rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+              <div class="flex items-center gap-3">
+                <div id="com-avatar-yo" class="w-9 h-9 editorial-gradient rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">?</div>
+                <textarea id="com-nueva-pub" rows="2" placeholder="Comparte un consejo, haz una pregunta o cuenta tu experiencia..."
+                  class="flex-1 resize-none bg-surface-container rounded-xl px-4 py-2.5 text-sm border-none focus:ring-2 focus:ring-primary outline-none"></textarea>
               </div>
-              <p class="text-on-surface-variant text-sm leading-relaxed">"Apliqué la regla del 30% de reinversión y en 2 meses dupliqué mi stock sin pedir un préstamo."</p>
-              <div class="flex items-center gap-6 pt-2 border-t border-outline-variant/10">
-                <button class="flex items-center gap-2 text-sm text-slate-400"><span class="material-symbols-outlined text-base">thumb_up</span> 24</button>
-                <button class="flex items-center gap-2 text-sm text-slate-400"><span class="material-symbols-outlined text-base">chat_bubble</span> 8 respuestas</button>
+              <div class="flex justify-end">
+                <button onclick="publicarEnComunidad()" class="editorial-gradient text-white px-5 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-sm">
+                  <span class="material-symbols-outlined text-sm">send</span> Publicar
+                </button>
               </div>
             </div>
-            <div class="bg-surface-container-lowest rounded-lg p-8 shadow-sm flex flex-col gap-4">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white font-bold">R</div>
-                <div><p class="font-bold text-sm">Roberto Díaz</p><p class="text-xs text-slate-400">Abarrotes · CDMX · hace 5h</p></div>
-              </div>
-              <p class="text-on-surface-variant text-sm leading-relaxed">"¿Cómo manejan los meses de baja demanda? Mi flujo de caja se complica mucho esos meses."</p>
-              <div class="bg-primary/5 rounded-lg p-4">
-                <p class="text-xs font-bold text-primary mb-1">Consejo del Mentor</p>
-                <p class="text-xs text-on-surface-variant">"En meses de baja demanda, es clave haber separado reservas en los meses buenos."</p>
-              </div>
-              <div class="flex items-center gap-6 pt-2 border-t border-outline-variant/10">
-                <button class="flex items-center gap-2 text-sm text-slate-400"><span class="material-symbols-outlined text-base">thumb_up</span> 11</button>
-                <button class="flex items-center gap-2 text-sm text-slate-400"><span class="material-symbols-outlined text-base">chat_bubble</span> 15 respuestas</button>
+
+            <!-- Posts -->
+            <div id="comunidad-feed">
+              <div class="text-center py-12 text-slate-400">
+                <span class="material-symbols-outlined text-5xl block mb-3">groups</span>
+                <p class="font-medium">Cargando publicaciones...</p>
               </div>
             </div>
           </div>
-          <div class="md:col-span-4 flex flex-col gap-6">
-            <div class="bg-inverse-surface rounded-lg p-8 text-white flex flex-col gap-4">
-              <h4 class="font-headline font-bold text-lg">La comunidad en números</h4>
+
+          <!-- Sidebar -->
+          <div class="md:col-span-4 flex flex-col gap-4">
+            <div class="bg-inverse-surface rounded-2xl p-6 text-white flex flex-col gap-4">
+              <h4 class="font-headline font-bold text-base">La comunidad en números</h4>
               <div class="grid grid-cols-2 gap-4">
-                <div><p class="text-3xl font-headline font-black text-primary-fixed-dim">4,200</p><p class="text-xs opacity-60">Emprendedores</p></div>
-                <div><p class="text-3xl font-headline font-black text-primary-fixed-dim">1,800</p><p class="text-xs opacity-60">Preguntas respondidas</p></div>
-                <div><p class="text-3xl font-headline font-black text-primary-fixed-dim">92%</p><p class="text-xs opacity-60">Satisfacción</p></div>
-                <div><p class="text-3xl font-headline font-black text-primary-fixed-dim">18</p><p class="text-xs opacity-60">Países</p></div>
+                <div><p class="text-2xl font-headline font-black text-primary-fixed-dim" id="com-stat-usuarios">—</p><p class="text-xs opacity-60">Emprendedores</p></div>
+                <div><p class="text-2xl font-headline font-black text-primary-fixed-dim" id="com-stat-posts">—</p><p class="text-xs opacity-60">Publicaciones</p></div>
+                <div><p class="text-2xl font-headline font-black text-primary-fixed-dim" id="com-stat-resp">—</p><p class="text-xs opacity-60">Respuestas</p></div>
+                <div><p class="text-2xl font-headline font-black text-primary-fixed-dim" id="com-stat-likes">—</p><p class="text-xs opacity-60">Likes</p></div>
               </div>
+            </div>
+            <div class="bg-primary/5 rounded-2xl p-5 flex flex-col gap-2">
+              <p class="font-bold text-sm text-primary flex items-center gap-2"><span class="material-symbols-outlined text-base">lightbulb</span> Normas de la comunidad</p>
+              <ul class="text-xs text-slate-500 flex flex-col gap-1.5">
+                <li>✓ Comparte experiencias reales de tu negocio</li>
+                <li>✓ Haz preguntas concretas y útiles</li>
+                <li>✓ Responde con respeto y generosidad</li>
+                <li>✗ No spam ni publicidad</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -1445,7 +1470,7 @@
     <!-- ── VISTA: ADMIN ── -->
     <div class="view fade-in" id="view-admin">
       <!-- Header verde -->
-      <div style="background:linear-gradient(135deg,#006d43 0%,#00a86b 100%)" class="px-5 sm:px-8 py-6 sm:py-8 text-white">
+      <div style="background:linear-gradient(135deg,#1261b8 0%,#0096c7 100%)" class="px-5 sm:px-8 py-6 sm:py-8 text-white">
         <div class="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div class="flex items-center gap-3 sm:gap-4 min-w-0">
             <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0" style="background:rgba(255,255,255,0.15)">
@@ -1477,11 +1502,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
           <div class="bg-white rounded-2xl p-5 shadow-sm border border-green-100 flex items-center gap-4">
             <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[#006d43]">verified</span>
+              <span class="material-symbols-outlined text-[#1568c4]">verified</span>
             </div>
             <div>
               <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Activas</p>
-              <p class="text-3xl font-headline font-black text-[#006d43]" id="admin-activas">—</p>
+              <p class="text-3xl font-headline font-black text-[#1568c4]" id="admin-activas">—</p>
             </div>
           </div>
           <div class="bg-white rounded-2xl p-5 shadow-sm border border-amber-100 flex items-center gap-4">
@@ -1516,7 +1541,7 @@
         <!-- Usuarios registrados -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
           <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center gap-3">
-            <span class="material-symbols-outlined text-[#006d43]">group</span>
+            <span class="material-symbols-outlined text-[#1568c4]">group</span>
             <h3 class="font-bold text-base text-slate-700">Usuarios registrados</h3>
           </div>
           <div class="hidden sm:block overflow-x-auto">
@@ -1548,7 +1573,7 @@
   <footer id="app-footer" class="mt-20 py-12 px-8 bg-[#f4fbf3] border-t border-outline-variant/10">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 items-start w-full">
       <div class="flex flex-col gap-4">
-        <h2 class="font-headline font-black text-xl text-[#006d43]">Faro</h2>
+        <h2 class="font-headline font-black text-xl text-[#1568c4]">Faro</h2>
         <p class="font-body text-xs text-slate-500 italic">© 2026 Faro. Tu copiloto estratégico de negocio.</p>
       </div>
       <div class="flex flex-col gap-4">
@@ -1560,8 +1585,8 @@
       <div class="flex flex-col gap-4 md:items-end">
         <h4 class="text-sm font-bold text-on-surface uppercase tracking-wider font-headline">Legal</h4>
         <nav class="flex flex-col md:items-end gap-2">
-          <a class="text-xs text-slate-400 hover:text-[#006d43] transition-colors" href="#">Privacidad</a>
-          <a class="text-xs text-slate-400 hover:text-[#006d43] transition-colors" href="#">Términos</a>
+          <a class="text-xs text-slate-400 hover:text-[#1568c4] transition-colors" href="#">Privacidad</a>
+          <a class="text-xs text-slate-400 hover:text-[#1568c4] transition-colors" href="#">Términos</a>
         </nav>
       </div>
     </div>
@@ -1753,6 +1778,16 @@ function showSubScreen(id) {
   document.getElementById('sub-overlay').classList.remove('hidden');
   document.getElementById('app-container').classList.add('hidden');
   document.getElementById('auth-overlay').classList.add('hidden');
+  // Resetear estado pago al volver a planes o entrar a pago
+  if (id === 'planes' || id === 'pago') {
+    _metodoSeleccionado = '';
+    document.getElementById('pago-destino')?.classList.add('hidden');
+    document.getElementById('pago-referencia') && (document.getElementById('pago-referencia').value = '');
+    ['Nequi','Daviplata','Llave'].forEach(x => {
+      const b = document.getElementById('btn-' + x);
+      if (b) { b.classList.remove('border-[#1568c4]','bg-[#eef4ff]','shadow-md'); b.classList.add('border-outline-variant'); }
+    });
+  }
 }
 
 function hideSubOverlay() {
@@ -1760,14 +1795,42 @@ function hideSubOverlay() {
   document.getElementById('app-container').classList.remove('hidden');
 }
 
+const _metodoNumeros = {
+  'Nequi':     '3173022758',
+  'Daviplata': '3173022758',
+  'Llave':     '@PLATA3173022758',
+};
+
 function selectMetodo(m) {
   _metodoSeleccionado = m;
   ['Nequi','Daviplata','Llave'].forEach(x => {
     const btn = document.getElementById('btn-' + x);
-    btn.classList.toggle('border-[#006d43]', x === m);
-    btn.classList.toggle('bg-[#f0faf5]', x === m);
-    btn.classList.toggle('border-outline-variant', x !== m);
+    if (x === m) {
+      btn.classList.add('border-[#1568c4]', 'bg-[#eef4ff]', 'shadow-md');
+      btn.classList.remove('border-outline-variant');
+    } else {
+      btn.classList.remove('border-[#1568c4]', 'bg-[#eef4ff]', 'shadow-md');
+      btn.classList.add('border-outline-variant');
+    }
   });
+  // Mostrar número destino
+  const destino = document.getElementById('pago-destino');
+  const numEl   = document.getElementById('pago-destino-numero');
+  if (destino && numEl) {
+    numEl.textContent = _metodoNumeros[m] || '';
+    destino.classList.remove('hidden');
+  }
+}
+
+function copiarNumeroPago() {
+  const num = document.getElementById('pago-destino-numero')?.textContent || '';
+  if (!num) return;
+  navigator.clipboard.writeText(num).then(() => {
+    const btn = event.currentTarget;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined text-base">check</span> ¡Copiado!';
+    setTimeout(() => { btn.innerHTML = orig; }, 1800);
+  }).catch(() => {});
 }
 
 async function solicitarPago() {
@@ -1839,7 +1902,10 @@ function checkAuth() {
   }
 }
 
+let _currentUser = null;
+
 function enterApp(user, diasRestantes) {
+  _currentUser = user;
   document.getElementById('sub-overlay').classList.add('hidden');
   document.getElementById('auth-overlay').classList.add('hidden');
   document.getElementById('app-container').classList.remove('hidden');
@@ -1880,7 +1946,7 @@ function enterApp(user, diasRestantes) {
     const mobileNav = document.getElementById('mobile-bottom-nav');
     if (mobileNav) {
       mobileNav.innerHTML = `
-        <button class="flex flex-col items-center gap-0.5 p-3 text-[#006d43]" onclick="navigate('admin');loadAdminPanel()">
+        <button class="flex flex-col items-center gap-0.5 p-3 text-[#1568c4]" onclick="navigate('admin');loadAdminPanel()">
           <span class="material-symbols-outlined text-xl">admin_panel_settings</span>
           <span class="text-[10px] font-bold">Admin</span>
         </button>
@@ -2344,8 +2410,8 @@ function imprimirFactura() {
     <title>Factura Faro</title>
     <style>
       body { font-family: Arial, sans-serif; padding: 24px; max-width: 380px; margin: 0 auto; color: #161d18; }
-      .editorial-gradient { background: linear-gradient(135deg,#006d43,#00a86b); }
-      .text-primary { color: #006d43; }
+      .editorial-gradient { background: linear-gradient(135deg,#1261b8,#0096c7); }
+      .text-primary { color: #1568c4; }
       .text-slate-400 { color: #94a3b8; }
       .text-slate-500 { color: #64748b; }
       .text-on-surface { color: #161d18; }
@@ -2875,21 +2941,22 @@ function navigate(viewId) {
   const target = document.getElementById('view-' + viewId);
   if (target) { target.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
   document.querySelectorAll('#sidebar-nav [data-view]').forEach(a => {
-    a.classList.remove('active', 'bg-white', 'text-[#006d43]', 'shadow-sm', 'mx-4', 'px-6');
+    a.classList.remove('active', 'bg-white', 'text-[#1568c4]', 'shadow-sm', 'mx-4', 'px-6');
     a.classList.add('text-slate-500', 'px-10');
   });
   const sa = document.querySelector(`#sidebar-nav [data-view="${viewId}"]`);
-  if (sa) { sa.classList.remove('text-slate-500', 'px-10'); sa.classList.add('active', 'bg-white', 'text-[#006d43]', 'shadow-sm', 'mx-4', 'px-6'); }
+  if (sa) { sa.classList.remove('text-slate-500', 'px-10'); sa.classList.add('active', 'bg-white', 'text-[#1568c4]', 'shadow-sm', 'mx-4', 'px-6'); }
   document.querySelectorAll('#top-nav [data-view]').forEach(a => {
-    a.className = 'cursor-pointer text-slate-600 font-medium hover:text-[#00a86b] transition-colors';
+    a.className = 'cursor-pointer text-slate-600 font-medium hover:text-[#0096c7] transition-colors';
   });
   const ta = document.querySelector(`#top-nav [data-view="${viewId}"]`);
-  if (ta) ta.className = 'cursor-pointer text-[#006d43] font-extrabold border-b-2 border-[#006d43]';
+  if (ta) ta.className = 'cursor-pointer text-[#1568c4] font-extrabold border-b-2 border-[#1568c4]';
   document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
   const ma = document.querySelector(`.mobile-nav-btn[data-view="${viewId}"]`);
   if (ma) ma.classList.add('active');
   if (viewId === 'admin') loadAdminPanel();
   if (viewId === 'ventas') loadVentas();
+  if (viewId === 'comunidad') loadComunidad();
 }
 
 // ── Calculadoras ──
@@ -2951,7 +3018,7 @@ async function loadAdminPanel() {
       listaEl.innerHTML = alertas.pendientes.map(p => `
         <div class="border border-slate-100 rounded-2xl p-5 mb-3 last:mb-0 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-amber-200 hover:bg-amber-50/30 transition-colors">
           <div class="flex items-start gap-4">
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-bold text-white text-lg" style="background:linear-gradient(135deg,#006d43,#00a86b)">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-bold text-white text-lg" style="background:linear-gradient(135deg,#1261b8,#0096c7)">
               ${escHtml((p.nombre||'?').charAt(0).toUpperCase())}
             </div>
             <div>
@@ -2988,7 +3055,7 @@ async function loadAdminPanel() {
         <tr class="border-t border-slate-100 hover:bg-slate-50/60 transition-colors">
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0" style="background:linear-gradient(135deg,#006d43,#00a86b)">
+              <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0" style="background:linear-gradient(135deg,#1261b8,#0096c7)">
                 ${escHtml((u.nombre||'?').charAt(0).toUpperCase())}
               </div>
               <div>
@@ -3010,7 +3077,7 @@ async function loadAdminPanel() {
       if (mobileList) mobileList.innerHTML = usuarios.map(u => `
         <div class="flex items-center justify-between p-4 gap-3">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shrink-0" style="background:linear-gradient(135deg,#006d43,#00a86b)">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shrink-0" style="background:linear-gradient(135deg,#1261b8,#0096c7)">
               ${escHtml((u.nombre||'?').charAt(0).toUpperCase())}
             </div>
             <div class="min-w-0">
@@ -3047,25 +3114,25 @@ function mostrarModalToken(token, emailUsuario, emailEnviado) {
   overlay.innerHTML = `
     <div style="background:#fff;border-radius:1.5rem;padding:2rem;max-width:420px;width:100%;box-shadow:0 25px 50px rgba(0,0,0,0.25)">
       <div style="text-align:center;margin-bottom:1.5rem">
-        <div style="width:56px;height:56px;background:linear-gradient(135deg,#006d43,#00a86b);border-radius:1rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+        <div style="width:56px;height:56px;background:linear-gradient(135deg,#1261b8,#0096c7);border-radius:1rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
           <span class="material-symbols-outlined" style="color:white;font-size:28px">key</span>
         </div>
         <h3 style="font-size:1.25rem;font-weight:900;color:#1a1a1a;margin:0 0 0.25rem">Token generado</h3>
         <p style="font-size:0.8rem;color:#64748b;margin:0">Para: <strong>${escHtml(emailUsuario)}</strong></p>
       </div>
 
-      <div style="background:#f0faf5;border:2px dashed #006d43;border-radius:1rem;padding:1.25rem;text-align:center;margin-bottom:1rem">
+      <div style="background:#eef4ff;border:2px dashed #1568c4;border-radius:1rem;padding:1.25rem;text-align:center;margin-bottom:1rem">
         <p style="font-size:0.7rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 0.5rem">Token de activación</p>
-        <p id="token-display" style="font-size:1.5rem;font-weight:900;letter-spacing:0.2em;color:#006d43;margin:0;font-family:monospace">${escHtml(token)}</p>
+        <p id="token-display" style="font-size:1.5rem;font-weight:900;letter-spacing:0.2em;color:#1568c4;margin:0;font-family:monospace">${escHtml(token)}</p>
       </div>
 
       <button onclick="navigator.clipboard.writeText('${escJs(token)}').then(()=>{this.textContent='✓ Copiado!';setTimeout(()=>{this.textContent='Copiar token'},2000)})"
-        style="width:100%;background:linear-gradient(135deg,#006d43,#00a86b);color:white;border:none;border-radius:9999px;padding:0.75rem;font-weight:700;font-size:0.9rem;cursor:pointer;margin-bottom:0.75rem">
+        style="width:100%;background:linear-gradient(135deg,#1261b8,#0096c7);color:white;border:none;border-radius:9999px;padding:0.75rem;font-weight:700;font-size:0.9rem;cursor:pointer;margin-bottom:0.75rem">
         Copiar token
       </button>
 
       ${emailEnviado
-        ? `<p style="text-align:center;font-size:0.8rem;color:#006d43;font-weight:600">✅ Token enviado al correo del usuario</p>`
+        ? `<p style="text-align:center;font-size:0.8rem;color:#1568c4;font-weight:600">✅ Token enviado al correo del usuario</p>`
         : `<div style="background:#fef3c7;border-radius:0.75rem;padding:0.75rem;margin-bottom:0.75rem">
             <p style="font-size:0.8rem;color:#92400e;font-weight:600;margin:0 0 0.25rem">⚠️ Correo no configurado</p>
             <p style="font-size:0.75rem;color:#92400e;margin:0">Copia el token y compártelo manualmente con el usuario.</p>
@@ -3101,14 +3168,14 @@ function testearEmail() {
       <p style="font-size:13px;color:#666;margin:0 0 16px">Ingresa el correo donde quieres recibir el email de prueba.</p>
       <input id="test-email-input" type="email" placeholder="tucorreo@gmail.com"
         style="width:100%;box-sizing:border-box;border:2px solid #e0e0e0;border-radius:12px;padding:12px 14px;font-size:14px;outline:none;margin-bottom:16px"
-        onfocus="this.style.borderColor='#006d43'" onblur="this.style.borderColor='#e0e0e0'"/>
+        onfocus="this.style.borderColor='#1568c4'" onblur="this.style.borderColor='#e0e0e0'"/>
       <div style="display:flex;gap:10px">
         <button onclick="document.getElementById('test-email-overlay').remove()"
           style="flex:1;background:#f0f0f0;color:#333;border:none;border-radius:12px;padding:11px;font-weight:700;font-size:14px;cursor:pointer">
           Cancelar
         </button>
         <button onclick="enviarTestEmail()"
-          style="flex:2;background:#006d43;color:#fff;border:none;border-radius:12px;padding:11px;font-weight:700;font-size:14px;cursor:pointer">
+          style="flex:2;background:#1568c4;color:#fff;border:none;border-radius:12px;padding:11px;font-weight:700;font-size:14px;cursor:pointer">
           Enviar prueba
         </button>
       </div>
@@ -3127,7 +3194,7 @@ async function enviarTestEmail() {
   const loadOverlay = document.createElement('div');
   loadOverlay.id = 'test-email-loading';
   loadOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center';
-  loadOverlay.innerHTML = `<div style="background:#fff;border-radius:16px;padding:28px 36px;text-align:center;font-weight:700;color:#006d43;font-size:15px">⏳ Enviando...</div>`;
+  loadOverlay.innerHTML = `<div style="background:#fff;border-radius:16px;padding:28px 36px;text-align:center;font-weight:700;color:#1568c4;font-size:15px">⏳ Enviando...</div>`;
   document.body.appendChild(loadOverlay);
 
   try {
@@ -3146,10 +3213,10 @@ async function enviarTestEmail() {
       overlay.innerHTML = `
         <div style="background:#fff;border-radius:20px;padding:32px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
           <div style="font-size:48px;margin-bottom:12px">✅</div>
-          <h3 style="font-size:18px;font-weight:800;color:#006d43;margin:0 0 8px">Email enviado</h3>
+          <h3 style="font-size:18px;font-weight:800;color:#1568c4;margin:0 0 8px">Email enviado</h3>
           <p style="color:#555;font-size:14px;margin:0 0 20px">${data.mensaje}</p>
           <p style="color:#888;font-size:12px;margin:0 0 20px">Si no lo ves en la bandeja, revisa la carpeta de <strong>Spam</strong>.</p>
-          <button onclick="this.closest('div').parentElement.remove()" style="background:#006d43;color:#fff;border:none;border-radius:12px;padding:10px 28px;font-weight:700;font-size:14px;cursor:pointer">Cerrar</button>
+          <button onclick="this.closest('div').parentElement.remove()" style="background:#1568c4;color:#fff;border:none;border-radius:12px;padding:10px 28px;font-weight:700;font-size:14px;cursor:pointer">Cerrar</button>
         </div>`;
       document.body.appendChild(overlay);
     } else {
@@ -3180,6 +3247,266 @@ async function enviarTestEmail() {
         <button onclick="this.closest('div').parentElement.remove()" style="background:#e65100;color:#fff;border:none;border-radius:12px;padding:10px 28px;font-weight:700;font-size:14px;cursor:pointer">Cerrar</button>
       </div>`;
     document.body.appendChild(overlay);
+  }
+}
+
+// ── COMUNIDAD ─────────────────────────────────────────────────────────────────
+
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (diff < 60) return 'hace un momento';
+  if (diff < 3600) return `hace ${Math.floor(diff/60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff/3600)} h`;
+  if (diff < 604800) return `hace ${Math.floor(diff/86400)} días`;
+  return new Date(dateStr).toLocaleDateString('es-CO', { day:'numeric', month:'short' });
+}
+
+function getInitial(nombre) {
+  return (nombre || '?').charAt(0).toUpperCase();
+}
+
+function avatarColor(nombre) {
+  const colors = ['#1568c4','#0096c7','#1a7aad','#9c4dcc','#e06c00','#c62828','#0277bd'];
+  let h = 0; for (let c of (nombre||'')) h = (h*31 + c.charCodeAt(0)) % colors.length;
+  return colors[h];
+}
+
+async function loadComunidad() {
+  const feed = document.getElementById('comunidad-feed');
+  feed.innerHTML = `<div class="text-center py-12 text-slate-400"><span class="material-symbols-outlined text-5xl block mb-3">hourglass_top</span><p class="font-medium">Cargando publicaciones...</p></div>`;
+
+  // Avatar propio
+  const me = _currentUser;
+  if (me) {
+    const av = document.getElementById('com-avatar-yo');
+    if (av) { av.textContent = getInitial(me.nombre); av.style.background = avatarColor(me.nombre); }
+  }
+
+  try {
+    const data = await apiFetch('/comunidad');
+    // Stats
+    document.getElementById('com-stat-usuarios').textContent = data.stats.usuarios;
+    document.getElementById('com-stat-posts').textContent    = data.stats.posts;
+    document.getElementById('com-stat-resp').textContent     = data.stats.respuestas;
+    document.getElementById('com-stat-likes').textContent    = data.stats.likes;
+
+    if (!data.posts.length) {
+      feed.innerHTML = `<div class="text-center py-16 text-slate-400">
+        <span class="material-symbols-outlined text-6xl block mb-3">chat_bubble_outline</span>
+        <p class="font-semibold text-base">¡Sé el primero en publicar!</p>
+        <p class="text-sm mt-1">Comparte un consejo o haz una pregunta a la comunidad.</p>
+      </div>`;
+      return;
+    }
+
+    feed.innerHTML = '';
+    data.posts.forEach(post => feed.appendChild(renderPost(post)));
+  } catch (e) {
+    feed.innerHTML = `<div class="text-center py-10 text-slate-400"><p>Error al cargar. Intenta de nuevo.</p></div>`;
+  }
+}
+
+function renderPost(post) {
+  const card = document.createElement('div');
+  card.id = `post-${post.id}`;
+  card.className = 'bg-surface-container-lowest rounded-2xl p-5 shadow-sm flex flex-col gap-3 mb-4';
+
+  const esPropio = _currentUser && _currentUser.id === post.usuario_id;
+  const negocio  = post.nombre_negocio ? `<span class="text-xs text-primary font-semibold">${escHtml(post.nombre_negocio)}</span>` : '';
+  const likeBtn  = `<button onclick="toggleLikeComunidad(${post.id},this)"
+    class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full transition-all ${post.yo_like ? 'bg-primary/10 text-primary font-bold' : 'text-slate-400 hover:bg-primary/5 hover:text-primary'}"
+    data-liked="${post.yo_like ? '1' : '0'}">
+    <span class="material-symbols-outlined text-sm">${post.yo_like ? 'favorite' : 'favorite_border'}</span>
+    <span id="likes-count-${post.id}">${post.likes_count}</span>
+  </button>`;
+
+  const delBtn = esPropio ? `<button onclick="eliminarPostComunidad(${post.id})"
+    class="text-xs text-red-400 hover:text-red-600 transition-colors flex items-center gap-1">
+    <span class="material-symbols-outlined text-sm">delete</span>
+  </button>` : '';
+
+  // Respuestas HTML
+  let respHtml = '';
+  if (post.respuestas && post.respuestas.length) {
+    respHtml = post.respuestas.map(r => `
+      <div class="flex gap-2.5 items-start" id="resp-${r.id}">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+          style="background:${avatarColor(r.usuario_nombre)}">${getInitial(r.usuario_nombre)}</div>
+        <div class="flex-1 bg-surface-container rounded-xl px-3 py-2">
+          <div class="flex items-center gap-2 flex-wrap mb-0.5">
+            <span class="font-semibold text-xs">${escHtml(r.usuario_nombre)}</span>
+            ${r.nombre_negocio ? `<span class="text-xs text-primary font-semibold">${escHtml(r.nombre_negocio)}</span>` : ''}
+            <span class="text-xs text-slate-400 ml-auto">${timeAgo(r.created_at)}</span>
+          </div>
+          <p class="text-sm text-on-surface">${escHtml(r.contenido)}</p>
+        </div>
+      </div>`).join('');
+  }
+
+  card.innerHTML = `
+    <!-- Cabecera -->
+    <div class="flex items-start gap-3">
+      <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+        style="background:${avatarColor(post.usuario_nombre)}">${getInitial(post.usuario_nombre)}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-semibold text-sm">${escHtml(post.usuario_nombre)}</span>
+          ${negocio}
+          <span class="text-xs text-slate-400 ml-auto">${timeAgo(post.created_at)}</span>
+          ${delBtn}
+        </div>
+        <p class="text-sm text-on-surface mt-1 whitespace-pre-wrap">${escHtml(post.contenido)}</p>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="flex items-center gap-3 pl-12">
+      ${likeBtn}
+      <button onclick="toggleRespuesta(${post.id})"
+        class="flex items-center gap-1 text-xs text-slate-400 hover:text-primary px-3 py-1.5 rounded-full hover:bg-primary/5 transition-all">
+        <span class="material-symbols-outlined text-sm">chat_bubble_outline</span>
+        <span id="resp-count-${post.id}">${post.resp_count}</span> Respuestas
+      </button>
+    </div>
+
+    <!-- Respuestas -->
+    <div id="respuestas-${post.id}" class="pl-12 flex flex-col gap-2 ${post.respuestas && post.respuestas.length ? '' : 'hidden'}">
+      ${respHtml}
+      <!-- Caja para responder (inicialmente oculta) -->
+      <div id="form-resp-${post.id}" class="hidden flex gap-2 items-center mt-1">
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+          style="background:${avatarColor(_currentUser?.nombre || '')}">
+          ${getInitial(_currentUser?.nombre || '')}
+        </div>
+        <input type="text" id="input-resp-${post.id}" placeholder="Escribe tu respuesta..."
+          class="flex-1 bg-surface-container rounded-full px-3 py-1.5 text-sm border-none focus:ring-2 focus:ring-primary outline-none"
+          onkeypress="if(event.key==='Enter') enviarRespuesta(${post.id})">
+        <button onclick="enviarRespuesta(${post.id})" class="editorial-gradient text-white rounded-full px-3 py-1.5 text-xs font-bold">
+          <span class="material-symbols-outlined text-sm">send</span>
+        </button>
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+async function publicarEnComunidad() {
+  const ta   = document.getElementById('com-nueva-pub');
+  const texto = ta.value.trim();
+  if (!texto) return;
+
+  try {
+    const post = await apiFetch('/comunidad', { method: 'POST', body: JSON.stringify({ contenido: texto }) });
+    ta.value = '';
+    const feed = document.getElementById('comunidad-feed');
+    // Quitar placeholder si existe
+    const placeholder = feed.querySelector('.text-center');
+    if (placeholder && feed.children.length === 1) placeholder.remove();
+    // Insertar al inicio
+    const card = renderPost(post);
+    feed.insertBefore(card, feed.firstChild);
+    // Actualizar stats
+    const curr = parseInt(document.getElementById('com-stat-posts').textContent) || 0;
+    document.getElementById('com-stat-posts').textContent = curr + 1;
+  } catch (e) {
+    alert('No se pudo publicar. Intenta de nuevo.');
+  }
+}
+
+function toggleRespuesta(postId) {
+  const respBox = document.getElementById(`respuestas-${postId}`);
+  const formEl  = document.getElementById(`form-resp-${postId}`);
+  if (!respBox || !formEl) return;
+  respBox.classList.remove('hidden');
+  formEl.classList.toggle('hidden');
+  if (!formEl.classList.contains('hidden')) {
+    const inp = document.getElementById(`input-resp-${postId}`);
+    if (inp) inp.focus();
+  }
+}
+
+async function enviarRespuesta(postId) {
+  const inp = document.getElementById(`input-resp-${postId}`);
+  if (!inp) return;
+  const texto = inp.value.trim();
+  if (!texto) return;
+
+  try {
+    const resp = await apiFetch(`/comunidad/${postId}/respuestas`, {
+      method: 'POST', body: JSON.stringify({ contenido: texto }) });
+    inp.value = '';
+
+    const respContainer = document.getElementById(`respuestas-${postId}`);
+    const formEl = document.getElementById(`form-resp-${postId}`);
+    if (respContainer && formEl) {
+      const div = document.createElement('div');
+      div.id = `resp-${resp.id}`;
+      div.className = 'flex gap-2.5 items-start';
+      div.innerHTML = `
+        <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+          style="background:${avatarColor(resp.usuario_nombre)}">${getInitial(resp.usuario_nombre)}</div>
+        <div class="flex-1 bg-surface-container rounded-xl px-3 py-2">
+          <div class="flex items-center gap-2 flex-wrap mb-0.5">
+            <span class="font-semibold text-xs">${escHtml(resp.usuario_nombre)}</span>
+            ${resp.nombre_negocio ? `<span class="text-xs text-primary font-semibold">${escHtml(resp.nombre_negocio)}</span>` : ''}
+            <span class="text-xs text-slate-400 ml-auto">hace un momento</span>
+          </div>
+          <p class="text-sm text-on-surface">${escHtml(resp.contenido)}</p>
+        </div>`;
+      respContainer.insertBefore(div, formEl);
+      // Actualizar contador
+      const cntEl = document.getElementById(`resp-count-${postId}`);
+      if (cntEl) cntEl.textContent = parseInt(cntEl.textContent || 0) + 1;
+      // Stats globales
+      const sr = document.getElementById('com-stat-resp');
+      if (sr) sr.textContent = parseInt(sr.textContent || 0) + 1;
+    }
+  } catch (e) {
+    alert('No se pudo enviar la respuesta.');
+  }
+}
+
+async function toggleLikeComunidad(postId, btn) {
+  try {
+    const data = await apiFetch(`/comunidad/${postId}/like`, { method: 'POST' });
+    const cntEl = document.getElementById(`likes-count-${postId}`);
+    if (cntEl) cntEl.textContent = data.likes;
+    if (data.yo_like) {
+      btn.classList.add('bg-primary/10','text-primary','font-bold');
+      btn.classList.remove('text-slate-400');
+      btn.querySelector('.material-symbols-outlined').textContent = 'favorite';
+    } else {
+      btn.classList.remove('bg-primary/10','text-primary','font-bold');
+      btn.classList.add('text-slate-400');
+      btn.querySelector('.material-symbols-outlined').textContent = 'favorite_border';
+    }
+    // Stats globales
+    const sl = document.getElementById('com-stat-likes');
+    if (sl) sl.textContent = data.yo_like
+      ? parseInt(sl.textContent||0)+1
+      : Math.max(0, parseInt(sl.textContent||0)-1);
+  } catch (e) {
+    // silencioso
+  }
+}
+
+async function eliminarPostComunidad(postId) {
+  if (!confirm('¿Eliminar esta publicación?')) return;
+  try {
+    await apiFetch(`/comunidad/${postId}`, { method: 'DELETE' });
+    document.getElementById(`post-${postId}`)?.remove();
+    const curr = parseInt(document.getElementById('com-stat-posts').textContent) || 0;
+    document.getElementById('com-stat-posts').textContent = Math.max(0, curr - 1);
+    // Si no hay más posts
+    const feed = document.getElementById('comunidad-feed');
+    if (feed && !feed.children.length) {
+      feed.innerHTML = `<div class="text-center py-16 text-slate-400">
+        <span class="material-symbols-outlined text-6xl block mb-3">chat_bubble_outline</span>
+        <p class="font-semibold text-base">¡Sé el primero en publicar!</p>
+      </div>`;
+    }
+  } catch (e) {
+    alert('No se pudo eliminar.');
   }
 }
 
